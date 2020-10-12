@@ -74,7 +74,7 @@ def init_global_residual_time(dynamics):
             local_residual_norm[i] = np.linalg.norm((fundamental_frequency*tangent_vector(solution_curve, s[i])) - dynamics(solution_curve(s[i])), 2)
 
         # integrate the residual norm to get the global residual and return
-        return (1/(4*np.pi))*integ.simps(local_residual_norm, s)
+        return (1/(4*np.pi))*integ.trapz(local_residual_norm, s)
     return global_residual_time
 
 # run file to test residual function
