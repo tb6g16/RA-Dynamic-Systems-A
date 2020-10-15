@@ -1,5 +1,5 @@
-# This file contains the function to calculate the global residual for a given dynamical system
-# and an arbitrary solution function.
+# This file contains the function to calculate the global residual for a given
+# dynamical system and an arbitrary solution function.
 
 # Thomas Burton - October 2020
 
@@ -9,8 +9,8 @@ import matplotlib.pyplot as plt
 
 def tangent_vector(curve, s):
     """
-        This function estimates the tangent vector to a curve in state space using
-        finite differencing.
+        This function estimates the tangent vector to a curve in state space
+        using finite differencing.
 
         Parameters
         ----------
@@ -35,8 +35,8 @@ def tangent_vector(curve, s):
 
 def init_global_residual_time(dynamics):
     """
-        This function initialises the global residual function in the time domain for a given
-        dynamical system.
+        This function initialises the global residual function in the time
+        domain for a given dynamical system.
 
         Parameters
         ----------
@@ -52,8 +52,9 @@ def init_global_residual_time(dynamics):
     """
     def global_residual_time(solution_curve, fundamental_frequency):
         """
-            This function calculates the global residual of a solution curve with a given
-            frequency. This function is initialised with a specific dynamics specified.
+            This function calculates the global residual of a solution curve
+            with a given frequency. This function is initialised with a
+            specific dynamics specified.
 
             Parameters
             ----------
@@ -71,7 +72,9 @@ def init_global_residual_time(dynamics):
 
         # calculate local residual norms along solution curve
         for i in range(np.shape(s)[0]):
-            local_residual_norm[i] = np.linalg.norm((fundamental_frequency*tangent_vector(solution_curve, s[i])) - dynamics(solution_curve(s[i])), 2)
+            local_residual_norm[i] = np.linalg.norm((fundamental_frequency*\
+            tangent_vector(solution_curve, s[i])) - \
+            dynamics(solution_curve(s[i])), 2)
 
         # integrate the residual norm to get the global residual and return
         return (1/(4*np.pi))*integ.trapz(local_residual_norm, s)
@@ -86,7 +89,8 @@ if __name__ == "__main__":
     global_residual_time = init_global_residual_time(harm.dynamical_system)
     global_residual = np.zeros(np.shape(fundamental_frequency)[0])
     for i in range(np.shape(fundamental_frequency)[0]):
-        global_residual[i] = global_residual_time(harm.solution_curve, fundamental_frequency[i])
+        global_residual[i] = global_residual_time(harm.solution_curve, \
+        fundamental_frequency[i])
 
     plt.semilogx(fundamental_frequency, global_residual)
     plt.xlabel(r"$\omega_0$"), plt.ylabel("Global Residual")
