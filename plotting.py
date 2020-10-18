@@ -58,6 +58,8 @@ def plot(dynamics, curve):
     return None
 
 if __name__ == "__main__":
-    from test_case import dynamical_system, solution_curve
+    from test_cases import van_der_pol as vpd
+    from test_cases import harmonic_oscillator as harm
 
-    plot(dynamical_system, solution_curve)
+    plot(vpd.g, harm.solution_curve)
+    # plot(harm.dynamical_system, harm.solution_curve)
