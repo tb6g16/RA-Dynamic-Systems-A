@@ -31,17 +31,27 @@ class Trajectory:
         plot()
     """
     
-    __slots__ = ['curve_array', 'curve_func', 'closed']
+    __slots__ = ['curve_array', 'curve_func', 'curve_grad', 'closed']
 
     def __init__(self, curve, closed = True):
         """
-            DOCSTRING NEEDED HERE
+            Initialise an instance of the Trajectory object, with either a
+            continuous of discrete time function.
+
+            Parameters
+            ----------
+            curve: function or numpy.ndarray
+                function defining the trajectory, either given by a python
+                function (continuous) or a numpy array (discrete)
+            closed: bool
+                is the trajectory periodic (closed) or not
         """
         if type(curve) == np.ndarray:
             if len(np.shape(curve)) == 2:
                 self.curve_array = curve
                 self.closed = closed
                 self.curve_func = None
+                self.curve_grad = None
             else:
                 raise AttributeError("The trajectory array has to 2D (only \
                 rows and columns)!")
@@ -49,13 +59,24 @@ class Trajectory:
             self.curve_array = self.func2array(curve)
             self.closed = closed
             self.curve_func = curve
+            self.curve_grad = None
         else:
             raise TypeError("Curve variable has to be either a function or a \
             2D numpy array!")
     
-    def func2array(self, curve_func, time_disc = 200):
+    def func2array(self, curve_func, time_disc = 256):
         """
-            DOCSTRING NEEDED HERE
+            Discretise a continuous time representation of a function (given
+            as a python function) to a discrete time representation (as a
+            numpy array).
+
+            Parameters
+            ----------
+            curve_func: function
+                python function that defines the continuous time representation
+                of the trajectory
+            time_disc: positive integer
+                number of discrete time locations to use
         """
         curve_array = np.zeros([np.shape(curve_func(0))[0], time_disc])
         t = np.linspace(0, 2*np.pi, time_disc)
@@ -63,17 +84,35 @@ class Trajectory:
                 curve_array[:, i] = curve_func(t[i])
         return curve_array
     
-    def plot(self):
+    def plot(self, gradient = False, gradient_density = None):
         """
-            DOCSTRING NEEDED HERE
+            Plot 1D, 2D, or 3D trajectories or gradients.
+
+            Paramters
+            ---------
+            gradient: bool
+                boolean to decide whether to plot the gradient (tangent
+                vectors) with the trajectory curve
+            gradient_density: float between 0 and 1
+                amount of gradient vectors to show on the trajectory curve
         """
-        # check if vector space is 2D or 3D
+        # check if gradient density is between o and 1
+        if gradient_density < 0 or gradient_density > 1:
+            raise ValueError("gradient_density should be between 0 and 1 \
+            inclusive!")
+        # check if gradient attribute has value None
+        if self.curve_grad is None:
+            self.curve_grad = self.gradient()
+        # check dimension of plotting space and then plot (if possible)
         if np.shape(self.curve_array)[0] == 1:
             t = np.linspace(0, 2*np.pi, np.shape(self.curve_array)[1])
             # plot state against parametric time
             fig = plt.figure()
             ax = fig.gca()
             ax.plot(t, self.curve_array[0])
+
+            # NEEDS TO IMPLEMENT HERE ON X-AXIS
+
             plt.show()
         elif np.shape(self.curve_array)[0] == 2:
             # plot in 2D vector space
@@ -81,6 +120,11 @@ class Trajectory:
             ax = fig.gca()
             ax.plot(self.curve_array[0], self.curve_array[1])
             ax.set_aspect('equal')
+            if gradient:
+                for i in range(0, np.shape(self.curve_array)[1], \
+                int(1/gradient_density)):
+                    ax.quiver(self.curve_array[0, i], self.curve_array[1, i], \
+                    self.curve_grad[0, i], self.curve_grad[1, i])
             plt.show()
         elif np.shape(self.curve_array)[0] == 3:
             # plot in 3D vector space
@@ -88,13 +132,36 @@ class Trajectory:
             ax = fig.gca(projection = '3d')
             ax.plot(self.curve_array[0], self.curve_array[1], \
             self.curve_array[2])
+            # NEED TO DO GRADIENT PLOT FOR 3D
             plt.show()
         else:
             raise ValueError("Cannot plot trajectories in higher dimensions!")
         return None
+    
+    def gradient(self):
+        """
+            Calculate the gradient of the trajectory (tangent vector) at the
+            time locations given by the discrete time representation of the
+            Trajectory. The method used is Spectral Differentiation.
+        """
+        # number of discretised time locations
+        time_disc = np.shape(self.curve_array)[1]
+        # FFT along the time dimension
+        mode_array = np.fft.fft(self.curve_array, axis = 1)
+        # loop over time and multiply modes by modifiers
+        for k in range(time_disc):
+            if k < time_disc/2:
+                mode_array[:, k] *= 1j*k
+            elif k > time_disc/2:
+                mode_array[:, k] *= 1j*(k - time_disc)
+        # force zero mode if symmetric
+        if time_disc % 2 == 0:
+            mode_array[:, time_disc//2] *= 0
+        # IFFT to get discrete time gradients
+        return np.fft.ifft(mode_array, axis = 1)
 
 if __name__ == '__main__':
     from test_cases import harmonic_oscillator as harm
 
     unit_circle = Trajectory(harm.solution_curve)
-    unit_circle.plot()
+    unit_circle.plot(gradient = True, gradient_density = 32/256)
