@@ -7,10 +7,10 @@ import numpy as np
 
 def g(x):
     # nonlinear damping coefficient
-    mu = 0
+    mu = 1
     # initialise response vector
     response = np.zeros(np.shape(x))
     # assign response
     response[0] = x[1]
-    response[1] = (mu*(1 - (x[0] ** 2))*x[1]) + x[0]
+    response[1] = (mu*(1 - (x[0] ** 2))*x[1]) - x[0]
     return response
