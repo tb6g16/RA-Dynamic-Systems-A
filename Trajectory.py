@@ -28,6 +28,7 @@ class Trajectory:
         Methods
         -------
         func2array(curve_func, time_disc = 200)
+        gradient()
         plot()
     """
     
@@ -84,6 +85,28 @@ class Trajectory:
                 curve_array[:, i] = curve_func(t[i])
         return curve_array
     
+    def gradient(self):
+        """
+            Calculate the gradient of the trajectory (tangent vector) at the
+            time locations given by the discrete time representation of the
+            Trajectory. The method used is Spectral Differentiation.
+        """
+        # number of discretised time locations
+        time_disc = np.shape(self.curve_array)[1]
+        # FFT along the time dimension
+        mode_array = np.fft.fft(self.curve_array, axis = 1)
+        # loop over time and multiply modes by modifiers
+        for k in range(time_disc):
+            if k < time_disc/2:
+                mode_array[:, k] *= 1j*k
+            elif k > time_disc/2:
+                mode_array[:, k] *= 1j*(k - time_disc)
+        # force zero mode if symmetric
+        if time_disc % 2 == 0:
+            mode_array[:, time_disc//2] *= 0
+        # IFFT to get discrete time gradients
+        return np.fft.ifft(mode_array, axis = 1)
+
     def plot(self, gradient = False, gradient_density = None):
         """
             Plot 1D, 2D, or 3D trajectories or gradients.
@@ -137,28 +160,7 @@ class Trajectory:
         else:
             raise ValueError("Cannot plot trajectories in higher dimensions!")
         return None
-    
-    def gradient(self):
-        """
-            Calculate the gradient of the trajectory (tangent vector) at the
-            time locations given by the discrete time representation of the
-            Trajectory. The method used is Spectral Differentiation.
-        """
-        # number of discretised time locations
-        time_disc = np.shape(self.curve_array)[1]
-        # FFT along the time dimension
-        mode_array = np.fft.fft(self.curve_array, axis = 1)
-        # loop over time and multiply modes by modifiers
-        for k in range(time_disc):
-            if k < time_disc/2:
-                mode_array[:, k] *= 1j*k
-            elif k > time_disc/2:
-                mode_array[:, k] *= 1j*(k - time_disc)
-        # force zero mode if symmetric
-        if time_disc % 2 == 0:
-            mode_array[:, time_disc//2] *= 0
-        # IFFT to get discrete time gradients
-        return np.fft.ifft(mode_array, axis = 1)
+
 
 if __name__ == '__main__':
     from test_cases import harmonic_oscillator as harm
