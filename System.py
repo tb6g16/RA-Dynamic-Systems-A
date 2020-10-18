@@ -3,7 +3,7 @@
 
 # Thomas Burton - October 2020
 
-class dynamicalSystem:
+class System:
 
     def __init__(self):
         self.dummy = None
