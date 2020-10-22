@@ -4,7 +4,140 @@
 
 # Thomas Burton - October 2020
 
-class Problem:
+import numpy as np
+import scipy.integrate as integ
+import matplotlib.pyplot as plt
 
-    def __init__(self):
-        self.dummy = None
+class Problem:
+    """
+        This class holds the required information to solve the RA otpimisation
+        problem. Specifically: the dynamical system, history of Trajectories
+        at each iteration, and the methods required for the residuals and
+        post-processing. Consider this the master class of the numerical
+        method.
+
+        Attributes
+        ----------
+        trajectories: list of instances of Trajectory class
+            list of all the saved trajectories, where the trajectory history
+            will be utilised for post-processing
+        dynamical_system: instance of System class
+            the system for which we are trying the find the best periodic
+            solution to
+        fundamental_freq: list of floats
+            the number of revolutions of the trajectory completed for a given
+            unit of time, stored as list with a direct correspondence to the
+            trajectory list
+        global_residual: float
+            the global 'error' between a trajectory and the given dynamical
+            system
+        
+        Methods
+        -------
+        local_residual(trajectory = -1)
+        global_residual(trajectory = -1)
+        plot()
+    """
+
+    __slots__ = ['trajectories', 'dynamical_system', 'fundamental_freq', \
+        'global_residual']
+
+    def __init__(self, initial_trajectory, dynamical_system, fundamental_freq):
+        self.trajectories = []
+        self.trajectories.append(initial_trajectory)
+        self.dynamical_system = dynamical_system
+        self.fundamental_freq = []
+        self.fundamental_freq.append(fundamental_freq)
+        self.global_residual = None
+    
+    # NEEDS VALIDATION
+    def local_residual(self, trajectory = -1):
+        """
+            This function computes the local residual vector along the whole
+            trajectory (according the discretisation prescribed by the
+            trajectory class instance).
+
+            Parameters
+            ----------
+            trajectory: integer
+                the index of the trajectory list (picking a specific
+                trajectory), defaults the last trajectory in the list
+            
+            Returns
+            -------
+            residual_array: numpy array
+                the residual vector between the trajectory and the dynamical
+                system at the given location along the trajectory
+        """
+        # initialise arrays
+        trajectory_size = np.shape(self.trajectories[trajectory].curve_array)
+        response_array = np.zeros(trajectory_size)
+
+        # compute gradient of trajectory
+        self.trajectories[trajectory].curve_grad = \
+            self.trajectories[trajectory].gradient()
+
+        # evaluate system response at the states of the trajectory
+        for i in range(np.shape(self.trajectories[trajectory].curve_array)[1]):
+            state_now = self.trajectories[trajectory].curve_array[:, i]
+            response_array[:, i] = self.dynamical_system.response(state_now)
+
+        # compute value of residual vector
+        residual_array = (self.fundamental_freq[trajectory]*\
+            self.trajectories[trajectory].curve_grad) - response_array
+        return residual_array
+
+    # NEEDS VALIDATION
+    def compute_global_residual(self, trajectory = -1):
+        """
+            This method computes the global residual between an instance of the
+            Trajectory class and an instance of the System class.
+
+            Parameters
+            ----------
+            trajectory: integer
+                the index of the trajectory list (picking a specific
+                trajectory), defaults the last trajectory in the list
+        """
+        # obtain set of local residual vectors
+        local_residual_array = self.local_residual(trajectory = trajectory)
+
+        # take norm of the local residual vectors
+        local_residual_norm_vector = np.linalg.norm(local_residual_array, 2, \
+            axis = 0)
+        
+        # integrate over the discretised time
+        trajectory_discretisation = np.linspace(0, 2*np.pi, \
+            np.shape(self.trajectories[trajectory].curve_array)[1])
+        self.global_residual = (1/(4*np.pi))*integ.trapz(\
+            local_residual_norm_vector, trajectory_discretisation)
+
+        return None
+
+    def plot(self, trajectory = -1):
+        return None
+
+if __name__ == "__main__":
+    # import trajectory and system functions
+    from test_cases import van_der_pol as vpd
+    from test_cases import harmonic_oscillator as harm
+
+    # import class definitions
+    from Trajectory import Trajectory
+    from System import System
+
+    # initialise above classes
+    initial_trajectory = Trajectory(harm.solution_curve)
+    dynamical_system = System(vpd)
+
+    # initialise problem class and calculate global residuals
+    test_problem = Problem(initial_trajectory, dynamical_system, 1)
+    test_problem.compute_global_residual()
+    print(test_problem.global_residual)
+
+    test_problem.dynamical_system.parameters['mu'] = 1
+    test_problem.compute_global_residual()
+    print(test_problem.global_residual)
+
+    # PLOT HOW THE GLOBAL RESIDUAL CHANGES AS THE DISCRETISATION OF THE CIRCLE
+    # CHANGES (AND FOR DIFFERENT NONLINEAR DAMPING)
