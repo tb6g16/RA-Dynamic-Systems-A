@@ -85,6 +85,7 @@ class Trajectory:
                 curve_array[:, i] = curve_func(t[i])
         return curve_array
     
+    # REDO WITH RFFT
     def gradient(self):
         """
             Calculate the gradient of the trajectory (tangent vector) at the
@@ -105,7 +106,7 @@ class Trajectory:
         if time_disc % 2 == 0:
             mode_array[:, time_disc//2] *= 0
         # IFFT to get discrete time gradients
-        return np.fft.ifft(mode_array, axis = 1)
+        return np.real(np.fft.ifft(mode_array, axis = 1))
 
     def plot(self, gradient = False, gradient_density = None):
         """
