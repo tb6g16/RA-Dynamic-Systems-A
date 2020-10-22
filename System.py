@@ -3,6 +3,9 @@
 
 # Thomas Burton - October 2020
 
+import numpy as np
+import matplotlib.pyplot as plt
+
 class System:
     """
         This class defines the system of equations, defining a dynamical system
@@ -22,20 +25,75 @@ class System:
         
         Methods
         -------
-        plot() (TO BE IMPLEMENTED)
+        plot()
     """
 
-    __slots__ = ['response', 'optionals']
+    __slots__ = ['response', 'parameters']
 
     def __init__(self, function_file):
+        """
+            Initialise instance of the System class with a specific dynamical
+            system described as function in a separate python file.
+
+            Parameters
+            ----------
+            function_file: module
+                the file containing the definition of the function defining the
+                behaviour of the dynamical system, with optional parameters
+                given as a separate deictionary called "defaults"
+        """
         self.response = function_file.g
-        self.optionals = function_file.defaults
+        self.parameters = function_file.defaults
+    
+    def plot(self, domain=[[-1, 1], [-1, 1]], disc = [20, 20]):
+        """
+            This method plots the state-space response of the dynamical system
+            given by the particular instance of the System class over a
+            cartesian grid (in 2D).
+
+            Parameters
+            ----------
+            domain: 2-by-2 array of floats
+                the boundaries of the domain
+            disc: list of floats
+                the number of discrete points to take inside the domain, for
+                the respective directions
+        """
+        # discretise domain
+        x_dir_discretised = np.linspace(domain[0][0], domain[0][1], disc[0])
+        y_dir_discretised = np.linspace(domain[1][0], domain[1][1], disc[1])
+        X_discretised, Y_discretised = np.meshgrid(x_dir_discretised, \
+            y_dir_discretised)
+        
+        # initialise arrays
+        domain_array_size_list = list(np.shape(X_discretised))
+        domain_array_size_list.append(2) # NOT GENERAL
+        response_array = np.zeros(domain_array_size_list)
+        
+        # response vectors on domain
+        for i in range(disc[0]):
+            for j in range(disc[1]):
+                response_array[i, j, :] = self.response([X_discretised[i, j], \
+                    Y_discretised[i, j]])
+        
+        # plot vector field
+        plt.figure()
+        ax = plt.gca()
+        ax.quiver(X_discretised, Y_discretised, response_array[:, :, 0], \
+            response_array[:, :, 1])
+        plt.xlabel(r"$x$"), plt.ylabel(r"$\dot{x}$")
+        ax.set_aspect("equal")
+        plt.show()
+
+        return None
 
 if __name__ == "__main__":
     from test_cases import van_der_pol as vpd
-    
+
     system = System(vpd)
     
-    print(system.response([0, 1]))
-    system.optionals['mu'] = 1
-    print(system.response([0, 1]))
+    system.plot(domain = [[-2, 2], [-2, 2]])
+    system.parameters['mu'] = 1
+    system.plot(domain = [[-2, 2], [-2, 2]])
+    system.parameters['mu'] = 2
+    system.plot(domain = [[-2, 2], [-2, 2]])
