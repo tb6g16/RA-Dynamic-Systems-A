@@ -32,9 +32,9 @@ class Trajectory:
         plot()
     """
     
-    __slots__ = ['curve_array', 'curve_func', 'curve_grad', 'closed']
+    __slots__ = ['curve_array', 'curve_func', 'curve_grad']
 
-    def __init__(self, curve, closed = True):
+    def __init__(self, curve):
         """
             Initialise an instance of the Trajectory object, with either a
             continuous of discrete time function.
@@ -44,13 +44,10 @@ class Trajectory:
             curve: function or numpy.ndarray
                 function defining the trajectory, either given by a python
                 function (continuous) or a numpy array (discrete)
-            closed: bool
-                is the trajectory periodic (closed) or not
         """
         if type(curve) == np.ndarray:
             if len(np.shape(curve)) == 2:
                 self.curve_array = curve
-                self.closed = closed
                 self.curve_func = None
                 self.curve_grad = None
             else:
@@ -58,7 +55,6 @@ class Trajectory:
                 rows and columns)!")
         elif hasattr(curve, '__call__'):    
             self.curve_array = self.func2array(curve)
-            self.closed = closed
             self.curve_func = curve
             self.curve_grad = None
         else:
@@ -80,7 +76,7 @@ class Trajectory:
                 number of discrete time locations to use
         """
         curve_array = np.zeros([np.shape(curve_func(0))[0], time_disc])
-        t = np.linspace(0, 2*np.pi, time_disc)
+        t = np.linspace(0, 2*np.pi*(1 - (1/time_disc)), time_disc)
         for i in range(time_disc):
                 curve_array[:, i] = curve_func(t[i])
         return curve_array
