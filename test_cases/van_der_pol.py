@@ -7,17 +7,18 @@
 import numpy as np
 
 # define optional arguments
-defaults = {'mu': 0, 'a': np.pi}
+defaults = {'mu': 0}
 
 def g(x, defaults = defaults):
+
     # unpack defaults
     mu = defaults['mu']
+
     # initialise response vector
     response = np.zeros(np.shape(x))
+
     # assign response
     response[0] = x[1]
     response[1] = (mu*(1 - (x[0] ** 2))*x[1]) - x[0]
-    return response
 
-if __name__ == "__main__":
-    print(g([0, 1]))
+    return response

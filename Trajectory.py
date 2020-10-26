@@ -162,5 +162,5 @@ class Trajectory:
 if __name__ == '__main__':
     from test_cases import harmonic_oscillator as harm
 
-    unit_circle = Trajectory(harm.solution_curve)
+    unit_circle = Trajectory(harm.x)
     unit_circle.plot(gradient = True, gradient_density = 32/256)

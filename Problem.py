@@ -127,7 +127,7 @@ if __name__ == "__main__":
     from System import System
 
     # initialise above classes
-    initial_trajectory = Trajectory(harm.solution_curve)
+    initial_trajectory = Trajectory(harm.x)
     dynamical_system = System(vpd)
 
     # initialise problem class and calculate global residuals
