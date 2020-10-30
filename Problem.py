@@ -120,14 +120,14 @@ class Problem:
 if __name__ == "__main__":
     # import trajectory and system functions
     from test_cases import van_der_pol as vpd
-    from test_cases import harmonic_oscillator as harm
+    from test_cases import unit_circle as circ
 
     # import class definitions
     from Trajectory import Trajectory
     from System import System
 
     # initialise above classes
-    initial_trajectory = Trajectory(harm.x)
+    initial_trajectory = Trajectory(circ.x)
     dynamical_system = System(vpd)
 
     # initialise problem class and calculate global residuals
@@ -138,6 +138,3 @@ if __name__ == "__main__":
     test_problem.dynamical_system.parameters['mu'] = 1
     test_problem.compute_global_residual()
     print(test_problem.global_residual)
-
-    # PLOT HOW THE GLOBAL RESIDUAL CHANGES AS THE DISCRETISATION OF THE CIRCLE
-    # CHANGES (AND FOR DIFFERENT NONLINEAR DAMPING)

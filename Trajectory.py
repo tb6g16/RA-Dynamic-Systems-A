@@ -61,6 +61,7 @@ class Trajectory:
             raise TypeError("Curve variable has to be either a function or a \
             2D numpy array!")
     
+    # TIME_DISC HAS TO BE EVEN BECAUSE OF RFFT ALGORITHM
     def func2array(self, curve_func, time_disc = 256):
         """
             Discretise a continuous time representation of a function (given
@@ -91,18 +92,15 @@ class Trajectory:
         # number of discretised time locations
         time_disc = np.shape(self.curve_array)[1]
         # FFT along the time dimension
-        mode_array = np.fft.fft(self.curve_array, axis = 1)
+        mode_array = np.fft.rfft(self.curve_array, axis = 1)
         # loop over time and multiply modes by modifiers
-        for k in range(time_disc):
-            if k < time_disc/2:
-                mode_array[:, k] *= 1j*k
-            elif k > time_disc/2:
-                mode_array[:, k] *= 1j*(k - time_disc)
+        for k in range(time_disc//2):
+            mode_array[:, k] *= 1j*k
         # force zero mode if symmetric
         if time_disc % 2 == 0:
-            mode_array[:, time_disc//2] *= 0
+            mode_array[:, time_disc//2] = 0
         # IFFT to get discrete time gradients
-        return np.real(np.fft.ifft(mode_array, axis = 1))
+        return np.fft.irfft(mode_array, axis = 1)
 
     def plot(self, gradient = False, gradient_density = None):
         """
@@ -138,7 +136,8 @@ class Trajectory:
             # plot in 2D vector space
             fig = plt.figure()
             ax = fig.gca()
-            ax.plot(self.curve_array[0], self.curve_array[1])
+            ax.plot(np.append(self.curve_array[0], self.curve_array[0, 0]), \
+                np.append(self.curve_array[1], self.curve_array[1, 0]))
             ax.set_aspect('equal')
             if gradient:
                 for i in range(0, np.shape(self.curve_array)[1], \
@@ -150,8 +149,9 @@ class Trajectory:
             # plot in 3D vector space
             fig = plt.figure()
             ax = fig.gca(projection = '3d')
-            ax.plot(self.curve_array[0], self.curve_array[1], \
-            self.curve_array[2])
+            ax.plot(np.append(self.curve_array[0], self.curve_array[0, 0]), \
+                np.append(self.curve_array[1], self.curve_array[1, 0]), \
+                np.append(self.curve_array[2], self.curve_array[2, 0]))
             # NEED TO DO GRADIENT PLOT FOR 3D
             plt.show()
         else:
@@ -160,7 +160,7 @@ class Trajectory:
 
 
 if __name__ == '__main__':
-    from test_cases import unit_circle as harm
+    from test_cases import unit_circle as circ
 
-    unit_circle = Trajectory(harm.x)
+    unit_circle = Trajectory(circ.x)
     unit_circle.plot(gradient = True, gradient_density = 32/256)
