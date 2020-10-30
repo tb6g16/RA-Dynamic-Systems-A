@@ -77,12 +77,11 @@ class Trajectory:
                 number of discrete time locations to use
         """
         curve_array = np.zeros([np.shape(curve_func(0))[0], time_disc])
-        t = np.linspace(0, 2*np.pi*(1 - (1/time_disc)), time_disc)
+        t = np.linspace(0, 2*np.pi - (2*np.pi/(time_disc - 1)), time_disc)
         for i in range(time_disc):
                 curve_array[:, i] = curve_func(t[i])
         return curve_array
     
-    # REDO WITH RFFT
     def gradient(self):
         """
             Calculate the gradient of the trajectory (tangent vector) at the
