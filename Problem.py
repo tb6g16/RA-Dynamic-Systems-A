@@ -48,7 +48,8 @@ class Problem:
         self.dynamical_system = dynamical_system
         self.fundamental_freq = []
         self.fundamental_freq.append(fundamental_freq)
-        self.global_residual = None
+        self.global_residual = []
+        self.global_residual.append(self.compute_global_residual())
     
     # NEEDS VALIDATION
     def local_residual(self, trajectory = -1):
