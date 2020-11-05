@@ -82,6 +82,45 @@ class Trajectory:
                 curve_array[:, i] = curve_func(t[i])
         return curve_array
     
+    def add_traj(self, other_traj):
+        """
+            Sum two trajectories together, assuming they have the same
+            discretisation.
+
+            Parameters
+            ----------
+            other_traj: Trajectory
+                the other trajectory to be summed to this instace
+            
+            Returns
+            -------
+            new_traj: Trajectory
+                a new Trajectory instance which is the sum of the two previous
+        """
+        if not isinstance(other_traj, Trajectory):
+            raise TypeError("Inputs are not of the correct type!")
+        return Trajectory(self.curve_array + other_traj.curve_array)
+
+    def sub_traj(self, other_traj):
+        """
+            Take the difference of two trajectories, assuming they have the
+            same discretisation.
+
+            Parameters
+            ----------
+            other_traj: Trajectory
+                the other trajectory to be differenced with this instance
+
+            Returns
+            -------
+            new_traj: Trajectory
+                a new Trajectory instance which is the difference of the two
+                previous
+        """
+        if not isinstance(other_traj, Trajectory):
+            raise TypeError("Inputs are not of the correct type!")
+        return Trajectory(self.curve_array + other_traj.curve_array)
+
     def gradient(self):
         """
             Calculate the gradient of the trajectory (tangent vector) at the
