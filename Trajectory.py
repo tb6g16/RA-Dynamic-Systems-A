@@ -7,6 +7,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
+from System import System
+
+# GRADIENT ATTRIBUTE REQUIRES GETTER AND SETTER METHODS
+
 class Trajectory:
     """
         A trajectory in some finite-dimensional vector space parameterised with
@@ -164,6 +168,87 @@ class Trajectory:
             mode_array[:, time_disc//2] = 0
         # IFFT to get discrete time gradients
         self.grad = Trajectory(np.fft.irfft(mode_array, axis = 1))
+
+    def traj_response(self, sys):
+        """
+            This method takes in a trajectory in the state-space defined by the
+            dynamical system of the instance of the System class and returns an
+            instance of the Trajectory class which is the response of the
+            system at each state over the length of the tracectory
+
+            Parameters
+            ----------
+            traj: Trajectory object
+                the trajectory through state-space
+            
+            Returns
+            -------
+            response_traj: Trajectory object
+                the response at each state over the length of the given
+                trajectory (given as an instance of the Trajectory object)
+        """
+        # checks
+        if not isinstance(sys, System):
+            raise TypeError("Inputs are not of the correct type!")
+
+        # initialise arrays
+        array_size = np.shape(self.curve_array)
+        response_array = np.zeros(array_size)
+
+        # calculate gradient of trajectory
+        if self.grad is None:
+            self.gradient()
+        
+        # evaluate response
+        for i in range(array_size[1]):
+            response_array[:, i] = sys.response(self.curve_array[:, i])
+        
+        return Trajectory(response_array)
+    
+    def jacob_init(self, sys):
+        """
+            Initialise a function that returns the jacobian of this dynamical
+            system for a given scalar between 0 and 2*pi, which is the distance
+            along a given trajectory.
+
+            Parameters
+            ----------
+            traj: Trajectory
+                the particular trajectory for which the jacobian will be
+                evaluated over
+
+            Returns
+            -------
+            jacobian: function
+                the function that returns the jacobian of this instance of a
+                dynamical system
+        """
+        def jacobian(s):
+            """
+                Return a (square) jacobian matrix for a given scalar s between
+                0 and 2*pi.
+            """
+            if type(s) != float and type(s) != int:
+                raise TypeError("Inputs are not of the correct type!")
+            i = int((256/(2*np.pi))*s)
+            state = self.curve_array[:, i]
+            return sys.jacobian(state, defaults = sys.parameters)
+        return jacobian
+
+    def normed_traj(self):
+        """
+            Calculate the norm of the vector-valued trajectory at each of its
+            discretised locations, and return as another trajectory.
+
+            Returns
+            norm_traj: Trajectory
+                the norm of the vector-valued trajectory at each location it is
+                defined at
+        """
+        norm_traj = np.zeros([1, np.shape(self.curve_array)[1]])
+        for i in range(np.shape(self.curve_array)[1]):
+            norm_traj[i] = np.linalg.norm(self.curve_array[:, i])
+        return Trajectory(norm_traj)
 
     def plot(self, gradient = False, gradient_density = None):
         """
