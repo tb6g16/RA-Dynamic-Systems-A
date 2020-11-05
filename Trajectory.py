@@ -121,6 +121,18 @@ class Trajectory:
             raise TypeError("Inputs are not of the correct type!")
         return Trajectory(self.curve_array + other_traj.curve_array)
 
+    def __mul__(self, factor):
+        if type(factor) == float or type(factor) == int:
+            return Trajectory(factor*self.curve_array)
+        else:
+            print("Do matrix multiplication")
+
+    def __rmul__(self, factor):
+        if type(factor) == float or type(factor) == int:
+            return Trajectory(factor*self.curve_array)
+        else:
+            print("Do matrix multiplication")
+
     def gradient(self):
         """
             Calculate the gradient of the trajectory (tangent vector) at the
@@ -200,6 +212,11 @@ class Trajectory:
 if __name__ == '__main__':
     from test_cases import unit_circle as circ
 
-    unit_circle = Trajectory(circ.x)
-    unit_circle.plot(gradient = True, gradient_density = 32/256)
+    unit_circle1 = Trajectory(circ.x)
+    unit_circle2 = 0.5*Trajectory(circ.x)
+
+    unit_circle3 = unit_circle1.add_traj(unit_circle2)
+
+    unit_circle1.plot(gradient = True, gradient_density = 32/256)
+    unit_circle3.plot(gradient = True, gradient_density = 32/256)
     
