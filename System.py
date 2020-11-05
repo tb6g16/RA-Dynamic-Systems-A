@@ -42,10 +42,49 @@ class System:
                 behaviour of the dynamical system, with optional parameters
                 given as a separate deictionary called "defaults"
         """
+        if ('response' or 'jacobian') not in dir(function_file):
+            raise AttributeError("The file does not contain the required \
+                functions!")
         self.response = function_file.response
-        self.parameters = function_file.defaults
         self.jacobian = function_file.jacobian
+        if 'defaults' in dir(function_file):
+            self.parameters = function_file.defaults
+        else:
+            self.parameters = None
     
+    def traj_response(self, traj):
+        return None
+    
+    def jacob_init(self, traj):
+        """
+            Initialise a function that returns the jacobian of this dynamical
+            system for a given scalar between 0 and 2*pi, which is the distance
+            along a given trajectory.
+
+            Parameters
+            ----------
+            traj: Trajectory
+                the particular trajectory for which the jacobian will be
+                evaluated over
+
+            Returns
+            -------
+            jacobian: function
+                the function that returns the jacobian of this instance of a
+                dynamical system
+        """
+        def jacobian(s):
+            """
+                Return a (square) jacobian matrix for a given scalar s between
+                0 and 2*pi.
+            """
+            if type(s) != float and type(s) != int:
+                raise TypeError("Inputs are not of the correct type!")
+            i = int((256/(2*np.pi))*s)
+            state = traj.curve_array[:, i]
+            return self.jacobian(state, defaults = self.parameters)
+        return jacobian
+
     def plot(self, domain=[[-1, 1], [-1, 1]], disc = [20, 20]):
         """
             This method plots the state-space response of the dynamical system
