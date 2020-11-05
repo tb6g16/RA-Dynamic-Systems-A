@@ -28,7 +28,7 @@ class System:
         plot()
     """
 
-    __slots__ = ['response', 'parameters']
+    __slots__ = ['response', 'jacobian', 'parameters']
 
     def __init__(self, function_file):
         """
@@ -42,8 +42,9 @@ class System:
                 behaviour of the dynamical system, with optional parameters
                 given as a separate deictionary called "defaults"
         """
-        self.response = function_file.g
+        self.response = function_file.response
         self.parameters = function_file.defaults
+        self.jacobian = function_file.jacobian
     
     def plot(self, domain=[[-1, 1], [-1, 1]], disc = [20, 20]):
         """
