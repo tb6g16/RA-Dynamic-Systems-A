@@ -77,61 +77,74 @@ class Trajectory:
                 number of discrete time locations to use
         """
         curve_array = np.zeros([np.shape(curve_func(0))[0], time_disc])
-        t = np.linspace(0, 2*np.pi - (2*np.pi/(time_disc - 1)), time_disc)
+        t = np.linspace(0, 2*np.pi*(1 - 1/time_disc), time_disc)
         for i in range(time_disc):
                 curve_array[:, i] = curve_func(t[i])
         return curve_array
     
-    def add_traj(self, other_traj):
+    def gen_s(self, i):
         """
-            Sum two trajectories together, assuming they have the same
-            discretisation.
+            Generate the value of s (non-dimensional distance along the
+            trajectory) at a discretised point on the trajectory.
 
             Parameters
             ----------
-            other_traj: Trajectory
-                the other trajectory to be summed to this instace
-            
+            i: positive integer
+                the discretised point along the trajectory
+
             Returns
             -------
-            new_traj: Trajectory
-                a new Trajectory instance which is the sum of the two previous
+            s: numpy array
+                the location of the discretised points on the trajectory
         """
+        disc = np.shape(self.curve_array)[1]
+        return np.linspace(0, 2*np.pi*(1 - 1/disc), disc)[i]
+
+    def __add__(self, other_traj):
         if not isinstance(other_traj, Trajectory):
             raise TypeError("Inputs are not of the correct type!")
         return Trajectory(self.curve_array + other_traj.curve_array)
 
-    def sub_traj(self, other_traj):
-        """
-            Take the difference of two trajectories, assuming they have the
-            same discretisation.
-
-            Parameters
-            ----------
-            other_traj: Trajectory
-                the other trajectory to be differenced with this instance
-
-            Returns
-            -------
-            new_traj: Trajectory
-                a new Trajectory instance which is the difference of the two
-                previous
-        """
+    def __sub__(self, other_traj):
         if not isinstance(other_traj, Trajectory):
             raise TypeError("Inputs are not of the correct type!")
-        return Trajectory(self.curve_array + other_traj.curve_array)
+        return Trajectory(self.curve_array - other_traj.curve_array)
 
     def __mul__(self, factor):
+        # scalar multiplication
         if type(factor) == float or type(factor) == int:
             return Trajectory(factor*self.curve_array)
+        # variable matrix multiplication
+        elif hasattr(factor, '__call__'):
+            s_disc = np.shape(self.curve_array)
+            new_traj = np.zeros(s_disc[1])
+            for i in range(s_disc[1]):
+                s = self.gen_s(i)
+                new_traj[:, i] = np.matmul(factor(s), self.curve_array[:, i])
+            return Trajectory(new_traj)
+        # constant matrix multiplication
+        elif type(factor) == np.ndarray:
+            return Trajectory(np.matmul(factor, self.curve_array))
         else:
-            print("Do matrix multiplication")
+            raise TypeError("Inputs are not of the correct type!")
 
     def __rmul__(self, factor):
+        # scalar multiplication
         if type(factor) == float or type(factor) == int:
             return Trajectory(factor*self.curve_array)
+        # variable matrix multiplication
+        elif hasattr(factor, '__call__'):
+            s_disc = np.shape(self.curve_array)
+            new_traj = np.zeros(s_disc[1])
+            for i in range(s_disc[1]):
+                s = self.gen_s(i)
+                new_traj[:, i] = np.matmul(factor(s), self.curve_array[:, i])
+            return Trajectory(new_traj)
+        # constant matrix multiplication
+        elif type(factor) == np.ndarray:
+            return Trajectory(np.matmul(factor, self.curve_array))
         else:
-            print("Do matrix multiplication")
+            raise TypeError("Inputs are not of the correct type!")
 
     def gradient(self):
         """
@@ -215,7 +228,7 @@ if __name__ == '__main__':
     unit_circle1 = Trajectory(circ.x)
     unit_circle2 = 0.5*Trajectory(circ.x)
 
-    unit_circle3 = unit_circle1.add_traj(unit_circle2)
+    unit_circle3 = np.pi*unit_circle1 + unit_circle2
 
     unit_circle1.plot(gradient = True, gradient_density = 32/256)
     unit_circle3.plot(gradient = True, gradient_density = 32/256)
