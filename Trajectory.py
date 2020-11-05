@@ -228,6 +228,7 @@ class Trajectory:
                 Return a (square) jacobian matrix for a given scalar s between
                 0 and 2*pi.
             """
+            # test for index, and input as index instead of s
             if type(s) != float and type(s) != int:
                 raise TypeError("Inputs are not of the correct type!")
             i = int((256/(2*np.pi))*s)
@@ -305,7 +306,6 @@ class Trajectory:
         else:
             raise ValueError("Cannot plot trajectories in higher dimensions!")
         return None
-
 
 if __name__ == '__main__':
     from test_cases import unit_circle as circ
