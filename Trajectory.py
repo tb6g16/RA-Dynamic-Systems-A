@@ -32,7 +32,7 @@ class Trajectory:
         plot()
     """
     
-    __slots__ = ['curve_array', 'curve_func', 'curve_grad']
+    __slots__ = ['curve_array', 'curve_func', 'grad']
 
     def __init__(self, curve):
         """
@@ -49,14 +49,14 @@ class Trajectory:
             if len(np.shape(curve)) == 2:
                 self.curve_array = curve
                 self.curve_func = None
-                self.curve_grad = None
+                self.grad = None
             else:
                 raise AttributeError("The trajectory array has to 2D (only \
                 rows and columns)!")
         elif hasattr(curve, '__call__'):    
             self.curve_array = self.func2array(curve)
             self.curve_func = curve
-            self.curve_grad = None
+            self.grad = None
         else:
             raise TypeError("Curve variable has to be either a function or a \
             2D numpy array!")
@@ -138,7 +138,7 @@ class Trajectory:
         if time_disc % 2 == 0:
             mode_array[:, time_disc//2] = 0
         # IFFT to get discrete time gradients
-        return np.fft.irfft(mode_array, axis = 1)
+        self.grad = Trajectory(np.fft.irfft(mode_array, axis = 1))
 
     def plot(self, gradient = False, gradient_density = None):
         """
@@ -157,8 +157,8 @@ class Trajectory:
             raise ValueError("gradient_density should be between 0 and 1 \
             inclusive!")
         # check if gradient attribute has value None
-        if self.curve_grad is None:
-            self.curve_grad = self.gradient()
+        if gradient == True and self.grad is None:
+            self.gradient()
         # check dimension of plotting space and then plot (if possible)
         if np.shape(self.curve_array)[0] == 1:
             t = np.linspace(0, 2*np.pi, np.shape(self.curve_array)[1])
@@ -181,7 +181,7 @@ class Trajectory:
                 for i in range(0, np.shape(self.curve_array)[1], \
                 int(1/gradient_density)):
                     ax.quiver(self.curve_array[0, i], self.curve_array[1, i], \
-                    self.curve_grad[0, i], self.curve_grad[1, i])
+                    self.grad.curve_array[0, i], self.grad.curve_array[1, i])
             plt.show()
         elif np.shape(self.curve_array)[0] == 3:
             # plot in 3D vector space
@@ -202,3 +202,4 @@ if __name__ == '__main__':
 
     unit_circle = Trajectory(circ.x)
     unit_circle.plot(gradient = True, gradient_density = 32/256)
+    
