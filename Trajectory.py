@@ -223,17 +223,21 @@ class Trajectory:
                 the function that returns the jacobian of this instance of a
                 dynamical system
         """
-        def jacobian(s):
+        def jacobian(i):
             """
-                Return a (square) jacobian matrix for a given scalar s between
-                0 and 2*pi.
+                Return a (square) jacobian matrix for a given positive integer
+                being the discretised location along the trajectory.
+
+                Parameter
+                ---------
+                i: positive integer
+                    the discretised location on the trajectory
             """
             # test for index, and input as index instead of s
-            if type(s) != float and type(s) != int:
+            if type(i) != int:
                 raise TypeError("Inputs are not of the correct type!")
-            i = int((256/(2*np.pi))*s)
             state = self.curve_array[:, i]
-            return sys.jacobian(state, defaults = sys.parameters)
+            return sys.jacobian(state)
         return jacobian
 
     def normed_traj(self):
