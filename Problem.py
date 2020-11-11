@@ -75,8 +75,7 @@ class Problem:
         response_array = np.zeros(trajectory_size)
 
         # compute gradient of trajectory
-        self.trajectories[trajectory].curve_grad = \
-            self.trajectories[trajectory].gradient()
+        self.trajectories[trajectory].gradient()
 
         # evaluate system response at the states of the trajectory
         for i in range(np.shape(self.trajectories[trajectory].curve_array)[1]):
@@ -85,7 +84,7 @@ class Problem:
 
         # compute value of residual vector
         residual_array = (self.fundamental_freq[trajectory]*\
-            self.trajectories[trajectory].curve_grad) - response_array
+            self.trajectories[trajectory].grad.curve_array) - response_array
         return residual_array
 
     # NEEDS VALIDATION
@@ -110,10 +109,10 @@ class Problem:
         # integrate over the discretised time
         trajectory_discretisation = np.linspace(0, 2*np.pi, \
             np.shape(self.trajectories[trajectory].curve_array)[1])
-        self.global_residual = (1/(4*np.pi))*integ.trapz(\
-            local_residual_norm_vector, trajectory_discretisation)
+        global_residual = (1/(4*np.pi))*integ.trapz(local_residual_norm_vector\
+            , trajectory_discretisation)
 
-        return None
+        return global_residual
 
     def plot(self, trajectory = -1):
         return None
@@ -136,6 +135,7 @@ if __name__ == "__main__":
     test_problem.compute_global_residual()
     print(test_problem.global_residual)
 
-    test_problem.dynamical_system.parameters['mu'] = 1
+    # CHANGING PARAMETERS HAS NO EFFECT
+    test_problem.dynamical_system.parameters['mu'] = 50
     test_problem.compute_global_residual()
     print(test_problem.global_residual)
