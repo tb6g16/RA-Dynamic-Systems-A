@@ -4,44 +4,9 @@
 
 # Thomas Burton - November 2020
 
-def traj2vec(traj, freq):
-    """
-        This function takes in a trajectory and frequency and returns a vector
-        that will be used for the optimisation.
-
-        Parameters
-        ----------
-        traj: Trajectory
-            the trajectory that makes up most of the optimisation vector
-        freq: float
-            the fundamental frequency of the associated trajectory, the last
-            element of the optimisation vector
-        
-        Returns
-        -------
-        opt_vector: numpy array
-            the optimisation vector defined by the trajectory frequency pair
-    """
-    return None
-
-def vec2traj(opt_vector):
-    """
-        This function converts an optimisation variable back into its
-        corresponding trajectory frequency pair.
-
-        Parameters
-        ----------
-        opt_vector: numpy array
-            the optimisation vector
-        
-        Returns
-        -------
-        traj: Trajectory
-            the corresponding trajectory
-        freq: float
-            the corresponding frequency
-    """
-    return None
+import numpy as np
+from Trajectory import Trajectory
+from System import System
 
 def init_optimise_time(sys):
     """
