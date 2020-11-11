@@ -10,6 +10,8 @@ from mpl_toolkits.mplot3d import Axes3D
 from System import System
 
 # GRADIENT ATTRIBUTE REQUIRES GETTER AND SETTER METHODS
+# NEED TO DEFINE WHAT ** DOES
+# NEED TO DEFINE HOW TO NORM/MULTIPLY TWO TRAJECTORIES
 
 class Trajectory:
     """

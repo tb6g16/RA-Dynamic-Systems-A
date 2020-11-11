@@ -104,5 +104,3 @@ if __name__ == "__main__":
     system.plot(domain = [[-2, 2], [-2, 2]])
     system.parameters['mu'] = 2
     system.plot(domain = [[-2, 2], [-2, 2]])
-
-# TRAJECTORY RESPONSE AND JACOBIAN METHODS

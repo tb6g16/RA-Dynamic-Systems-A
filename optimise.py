@@ -7,6 +7,36 @@
 import numpy as np
 from Trajectory import Trajectory
 from System import System
+from Problem import Problem
+from traj2vec import traj2vec, vec2traj
+
+def init_opt_funcs(sys, dim):
+    """
+        This functions initialises the optimisation vectors for a specific
+        system.
+    """
+    def traj_global_res(opt_vector):
+        """
+            This function calculates the global residual for a given vector
+            that defines a trajectory frequency pair, for the purpose of
+            optimisation.
+        """
+        # unpack the vector
+        traj, freq = vec2traj(opt_vector, dim)
+
+        # initialise problem class and calculate the residuals
+        current = Problem(traj, sys, freq)
+
+        return current.global_residual[0]
+
+    def traj_global_res_jac(opt_vector):
+        """
+            This function calculates the gradient of the global residual for a
+            given vector that defines a trajectory frequency pair, for the
+            purpose of optimisation.
+        """
+        return None
+    return traj_global_res, traj_global_res_jac
 
 def init_optimise_time(sys):
     """
@@ -52,3 +82,15 @@ def init_optimise_time(sys):
         """
         return None
     return optimise_time
+
+if __name__ == "__main__":
+    from test_cases import unit_circle as uc
+    from test_cases import van_der_pol as vpd
+
+    sys = System(vpd)
+    circle = Trajectory(uc.x)
+    freq = 1
+
+    res_func, jac_func = init_opt_funcs(sys, 2)
+
+    print(res_func(traj2vec(circle, freq)))
