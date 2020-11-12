@@ -9,9 +9,8 @@ from mpl_toolkits.mplot3d import Axes3D
 
 from System import System
 
-# GRADIENT ATTRIBUTE REQUIRES GETTER AND SETTER METHODS
-# NEED TO DEFINE WHAT ** DOES
-# NEED TO DEFINE HOW TO NORM/MULTIPLY TWO TRAJECTORIES
+# GRADIENT ATTRIBUTE REQUIRES GETTER AND SETTER METHODS OR JUST CALCULATE AT
+# INIT
 
 class Trajectory:
     """
@@ -151,6 +150,25 @@ class Trajectory:
             return Trajectory(np.matmul(factor, self.curve_array))
         else:
             raise TypeError("Inputs are not of the correct type!")
+
+    def __pow__(self, exponent):
+        # perform element-by-element exponentiation
+        return Trajectory(self.curve_array ** exponent)
+
+    def traj_prod(self, other_traj):
+        """
+            This performs a multiplication of the current instance with another
+            instance of the Trajectory class in a sense of an Euclidean inner
+            product for every location s.
+        """
+        if not isinstance(other_traj, Trajectory):
+            raise TypeError("Inputs are not of the correct type!")
+        disc_size = np.shape(self.curve_array)[1]
+        product_array = np.zeros([1, disc_size])
+        for i in range(disc_size):
+            product_array[0, i] = np.dot(self.curve_array[:, i],\
+                other_traj.curve_array[:, i])
+        return Trajectory(product_array)
 
     def gradient(self):
         """

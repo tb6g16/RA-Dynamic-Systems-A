@@ -114,6 +114,33 @@ class Problem:
 
         return global_residual
 
+    def dglobal_res_dtraj(self, trajectory = -1):
+        """
+            This function calculates the gradient of the global residual with
+            respect to its discretised trajectory.
+        """
+        freq = self.fundamental_freq[trajectory]
+        traj = self.trajectories[trajectory]
+        local_res = Trajectory(self.local_residual(trajectory = trajectory))
+        local_res.gradient()
+        jacob_func = traj.jacob_init(self.dynamical_system)
+        return (-freq*local_res.grad) + (jacob_func*local_res)
+    
+    def dglobal_res_dfreq(self, trajectory = -1):
+        """
+            This function calculates the gradient of the global residual with
+            respect to the frequency of its associated frequency.
+        """
+        freq = self.fundamental_freq[trajectory]
+        traj = self.trajectories[trajectory]
+        traj.gradient()
+        traj_norm = traj.normed_traj()
+        traj_response = traj.traj_response(self.dynamical_system)
+        integrand = (2*freq*(traj_norm.curve_array**2)) - \
+            (2*traj_response.traj_prod(traj.grad))
+        traj_disc = np.linspace(0, 2*np.pi, np.shape(traj.curve_array)[1])
+        return (1/(2*np.pi))*integ.trapz(integrand, traj_disc)
+
     def plot(self, trajectory = -1):
         return None
 

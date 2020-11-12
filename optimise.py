@@ -21,10 +21,10 @@ def init_opt_funcs(sys, dim):
             that defines a trajectory frequency pair, for the purpose of
             optimisation.
         """
-        # unpack the vector
+        # unpack vector
         traj, freq = vec2traj(opt_vector, dim)
 
-        # initialise problem class and calculate the residuals
+        # initialise problem class
         current = Problem(traj, sys, freq)
 
         return current.global_residual[0]
@@ -35,7 +35,17 @@ def init_opt_funcs(sys, dim):
             given vector that defines a trajectory frequency pair, for the
             purpose of optimisation.
         """
-        return None
+        # unpack vector
+        traj, freq = vec2traj(opt_vector, dim)
+
+        # initialise problem class
+        current = Problem(traj, sys, freq)
+
+        # calculate gradient values
+        global_res_wrt_traj = current.dglobal_res_dtraj()
+        global_res_wrt_freq = current.dglobal_res_dfreq()
+
+        return traj2vec(global_res_wrt_traj, global_res_wrt_freq)
     return traj_global_res, traj_global_res_jac
 
 def init_optimise_time(sys):
