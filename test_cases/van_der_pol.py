@@ -29,7 +29,7 @@ def jacobian(x, defaults = defaults):
     mu = defaults['mu']
 
     #initialise jacobian matrix
-    jacobian_matrix = np.zeros([np.shape(x), np.shape(x)])
+    jacobian_matrix = np.zeros([np.shape(x)[0], np.shape(x)[0]])
 
     # compute jacobian elements
     jacobian_matrix[0, 1] = 1
@@ -37,3 +37,16 @@ def jacobian(x, defaults = defaults):
     jacobian_matrix[1, 1] = mu*(1 - (x[0] ** 2))
 
     return jacobian_matrix
+
+def nl_factor(x, defaults = defaults):
+
+    # unpack defualts
+    mu = defaults['mu']
+
+    # initialise output vector
+    nl_vector = np.zeros(np.shape(x))
+
+    # assign values to vector
+    nl_vector[1] = -mu*(x[0]**2)*x[1]
+
+    return nl_vector
