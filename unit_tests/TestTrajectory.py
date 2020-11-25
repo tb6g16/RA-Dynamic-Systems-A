@@ -77,20 +77,20 @@ class TestTrajectory(unittest.TestCase):
         self.assertIsInstance(traj2_response2, Trajectory)
 
         # same response for trajectories at crossing points
-        cross_index1 = int(((traj1.curve_array.shape[1])/(2*np.pi))*(np.pi/2))
-        cross_index2 = int(((traj1.curve_array.shape[1])/(2*np.pi))*((3*np.pi)/2))
-        traj1_cross1_response1 = traj1_response1.curve_array[:, cross_index1]
-        traj2_cross1_response1 = traj2_response1.curve_array[:, cross_index1]
-        traj1_cross2_response1 = traj1_response1.curve_array[:, cross_index2]
-        traj2_cross2_response1 = traj2_response1.curve_array[:, cross_index2]
-        traj1_cross1_response2 = traj1_response2.curve_array[:, cross_index1]
-        traj2_cross1_response2 = traj2_response2.curve_array[:, cross_index1]
-        traj1_cross2_response2 = traj1_response2.curve_array[:, cross_index2]
-        traj2_cross2_response2 = traj2_response2.curve_array[:, cross_index2]
-        self.assertTrue(np.allclose(traj1_cross1_response1, traj2_cross1_response1))
-        self.assertTrue(np.allclose(traj1_cross2_response1, traj2_cross2_response1))
-        self.assertTrue(np.allclose(traj1_cross1_response2, traj2_cross1_response2))
-        self.assertTrue(np.allclose(traj1_cross2_response2, traj2_cross2_response2))
+        cross_i1 = int(((traj1.curve_array.shape[1])/(2*np.pi))*(np.pi/2))
+        cross_i2 = int(((traj1.curve_array.shape[1])/(2*np.pi))*((3*np.pi)/2))
+        traj1_cross1_resp1 = traj1_response1.curve_array[:, cross_i1]
+        traj2_cross1_resp1 = traj2_response1.curve_array[:, cross_i1]
+        traj1_cross2_resp1 = traj1_response1.curve_array[:, cross_i2]
+        traj2_cross2_resp1 = traj2_response1.curve_array[:, cross_i2]
+        traj1_cross1_resp2 = traj1_response2.curve_array[:, cross_i1]
+        traj2_cross1_resp2 = traj2_response2.curve_array[:, cross_i1]
+        traj1_cross2_resp2 = traj1_response2.curve_array[:, cross_i2]
+        traj2_cross2_resp2 = traj2_response2.curve_array[:, cross_i2]
+        self.assertTrue(np.allclose(traj1_cross1_resp1, traj2_cross1_resp1))
+        self.assertTrue(np.allclose(traj1_cross2_resp1, traj2_cross2_resp1))
+        self.assertTrue(np.allclose(traj1_cross1_resp2, traj2_cross1_resp2))
+        self.assertTrue(np.allclose(traj1_cross2_resp2, traj2_cross2_resp2))
 
         # gradient of solution equal to response
         sys2.parameters['mu'] = 1
@@ -98,7 +98,36 @@ class TestTrajectory(unittest.TestCase):
         self.assertEqual(traj1.grad, traj1_response2)
 
     def test_traj_nl_response(self):
-        pass
+        traj1 = Trajectory(uc.x)
+        traj2 = Trajectory(elps.x)
+        sys1 = System(vpd)
+        sys2 = System(vis)
+        traj1_response1 = traj1.traj_nl_response(sys1)
+        traj1_response2 = traj1.traj_nl_response(sys2)
+        traj2_response1 = traj2.traj_nl_response(sys1)
+        traj2_response2 = traj2.traj_nl_response(sys2)
+
+        # output is of the Trajectory class
+        self.assertIsInstance(traj1_response1, Trajectory)
+        self.assertIsInstance(traj1_response2, Trajectory)
+        self.assertIsInstance(traj2_response1, Trajectory)
+        self.assertIsInstance(traj2_response2, Trajectory)
+
+        # same response for trajectories at crossing points
+        cross_i1 = int(((traj1.curve_array.shape[1])/(2*np.pi))*(np.pi/2))
+        cross_i2 = int(((traj1.curve_array.shape[1])/(2*np.pi))*((3*np.pi)/2))
+        traj1_cross1_resp1 = traj1_response1.curve_array[:, cross_i1]
+        traj2_cross1_resp1 = traj2_response1.curve_array[:, cross_i1]
+        traj1_cross2_resp1 = traj1_response1.curve_array[:, cross_i2]
+        traj2_cross2_resp1 = traj2_response1.curve_array[:, cross_i2]
+        traj1_cross1_resp2 = traj1_response2.curve_array[:, cross_i1]
+        traj2_cross1_resp2 = traj2_response2.curve_array[:, cross_i1]
+        traj1_cross2_resp2 = traj1_response2.curve_array[:, cross_i2]
+        traj2_cross2_resp2 = traj2_response2.curve_array[:, cross_i2]
+        self.assertTrue(np.allclose(traj1_cross1_resp1, traj2_cross1_resp1))
+        self.assertTrue(np.allclose(traj1_cross2_resp1, traj2_cross2_resp1))
+        self.assertTrue(np.allclose(traj1_cross1_resp2, traj2_cross1_resp2))
+        self.assertTrue(np.allclose(traj1_cross2_resp2, traj2_cross2_resp2))
 
     def test_jacob_init(self):
         pass
