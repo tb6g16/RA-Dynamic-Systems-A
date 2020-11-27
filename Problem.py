@@ -7,6 +7,7 @@
 import numpy as np
 import scipy.integrate as integ
 import matplotlib.pyplot as plt
+from Trajectory import Trajectory
 
 class Problem:
     """
@@ -75,7 +76,7 @@ class Problem:
         response_array = np.zeros(trajectory_size)
 
         # compute gradient of trajectory
-        self.trajectories[trajectory].gradient()
+        # self.trajectories[trajectory].gradient()
 
         # evaluate system response at the states of the trajectory
         for i in range(np.shape(self.trajectories[trajectory].curve_array)[1]):
@@ -101,18 +102,21 @@ class Problem:
         """
         # obtain set of local residual vectors
         local_residual_array = self.local_residual(trajectory = trajectory)
+        local_residual = Trajectory(local_residual_array)
 
         # take norm of the local residual vectors
-        local_residual_norm_vector = np.linalg.norm(local_residual_array, 2, \
-            axis = 0)
+        # local_residual_norm_vector = np.linalg.norm(local_residual_array, 2, \
+        #     axis = 0)
+        local_residual_norm = local_residual.normed_traj()**2
         
         # integrate over the discretised time
-        trajectory_discretisation = np.linspace(0, 2*np.pi, \
-            np.shape(self.trajectories[trajectory].curve_array)[1])
-        global_residual = (1/(4*np.pi))*integ.trapz(local_residual_norm_vector\
-            , trajectory_discretisation)
+        # trajectory_discretisation = np.linspace(0, 2*np.pi, \
+        #     np.shape(self.trajectories[trajectory].curve_array)[1])
+        # global_residual = (1/(4*np.pi))*integ.trapz(local_residual_norm_vector\
+        #     , trajectory_discretisation)
+        global_res = 0.5*local_residual_norm.average_over_s()
 
-        return global_residual
+        return global_res
 
     def dglobal_res_dtraj(self, trajectory = -1):
         """
@@ -122,7 +126,7 @@ class Problem:
         freq = self.fundamental_freq[trajectory]
         traj = self.trajectories[trajectory]
         local_res = Trajectory(self.local_residual(trajectory = trajectory))
-        local_res.gradient()
+        # local_res.gradient()
         jacob_func = traj.jacob_init(self.dynamical_system)
         return (-freq*local_res.grad) + (jacob_func*local_res)
     
@@ -133,13 +137,14 @@ class Problem:
         """
         freq = self.fundamental_freq[trajectory]
         traj = self.trajectories[trajectory]
-        traj.gradient()
+        # traj.gradient()
         traj_norm = traj.normed_traj()
         traj_response = traj.traj_response(self.dynamical_system)
-        integrand = (2*freq*(traj_norm.curve_array**2)) - \
+        integrand = (2*freq*(traj_norm**2)) - \
             (2*traj_response.traj_prod(traj.grad))
-        traj_disc = np.linspace(0, 2*np.pi, np.shape(traj.curve_array)[1])
-        return (1/(2*np.pi))*integ.trapz(integrand, traj_disc)
+        # traj_disc = np.linspace(0, 2*np.pi, np.shape(traj.curve_array)[1])
+        # return (1/(2*np.pi))*integ.trapz(integrand, traj_disc)
+        return integrand.average_over_s()
 
     def plot(self, trajectory = -1):
         return None
@@ -147,22 +152,22 @@ class Problem:
 if __name__ == "__main__":
     # import trajectory and system functions
     from test_cases import van_der_pol as vpd
-    from test_cases import unit_circle as circ
+    from test_cases import unit_circle as uc
 
     # import class definitions
     from Trajectory import Trajectory
     from System import System
 
     # initialise above classes
-    initial_trajectory = Trajectory(circ.x)
+    initial_trajectory = Trajectory(uc.x)
     dynamical_system = System(vpd)
 
     # initialise problem class and calculate global residuals
     test_problem = Problem(initial_trajectory, dynamical_system, 1)
-    test_problem.compute_global_residual()
+    # test_problem.compute_global_residual()
     print(test_problem.global_residual)
 
     # CHANGING PARAMETERS HAS NO EFFECT
-    test_problem.dynamical_system.parameters['mu'] = 50
-    test_problem.compute_global_residual()
+    test_problem.dynamical_system.parameters['mu'] = 1
+    # test_problem.compute_global_residual()
     print(test_problem.global_residual)

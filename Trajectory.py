@@ -4,6 +4,7 @@
 # Thomas Burton - October 2020
 
 import numpy as np
+import scipy.integrate as integ
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
@@ -39,7 +40,7 @@ class Trajectory:
     
     __slots__ = ['curve_array', 'curve_func', 'grad']
 
-    def __init__(self, curve):
+    def __init__(self, curve, comp_grad = True):
         """
             Initialise an instance of the Trajectory object, with either a
             continuous of discrete time function.
@@ -51,23 +52,31 @@ class Trajectory:
                 function (continuous) or a numpy array (discrete)
         """
         if type(curve) == np.ndarray:
+            if len(np.shape(curve)) == 1:
+                curve = np.expand_dims(curve, axis = 0)
             if len(np.shape(curve)) == 2:
                 self.curve_array = curve
                 self.curve_func = None
-                self.grad = None
+                if comp_grad == True:
+                    self.gradient()
+                else:
+                    self.grad = None
             else:
                 raise AttributeError("The trajectory array has to 2D (only \
                 rows and columns)!")
         elif hasattr(curve, '__call__'):    
             self.curve_array = self.func2array(curve)
             self.curve_func = curve
-            self.grad = None
+            if comp_grad == True:
+                self.gradient()
+            else:
+                self.grad = None
         else:
             raise TypeError("Curve variable has to be either a function or a \
             2D numpy array!")
-    
+
     # TIME_DISC HAS TO BE EVEN BECAUSE OF RFFT ALGORITHM
-    def func2array(self, curve_func, time_disc = 256):
+    def func2array(self, curve_func, time_disc = 64):
         """
             Discretise a continuous time representation of a function (given
             as a python function) to a discrete time representation (as a
@@ -86,24 +95,6 @@ class Trajectory:
         for i in range(time_disc):
                 curve_array[:, i] = curve_func(t[i])
         return curve_array
-    
-    def gen_s(self, i):
-        """
-            Generate the value of s (non-dimensional distance along the
-            trajectory) at a discretised point on the trajectory.
-
-            Parameters
-            ----------
-            i: positive integer
-                the discretised point along the trajectory
-
-            Returns
-            -------
-            s: numpy array
-                the location of the discretised points on the trajectory
-        """
-        disc = np.shape(self.curve_array)[1]
-        return np.linspace(0, 2*np.pi*(1 - 1/disc), disc)[i]
 
     def __add__(self, other_traj):
         if not isinstance(other_traj, Trajectory):
@@ -122,10 +113,10 @@ class Trajectory:
         # variable matrix multiplication
         elif hasattr(factor, '__call__'):
             s_disc = np.shape(self.curve_array)
-            new_traj = np.zeros(s_disc[1])
+            new_traj = np.zeros(s_disc)
             for i in range(s_disc[1]):
-                s = self.gen_s(i)
-                new_traj[:, i] = np.matmul(factor(s), self.curve_array[:, i])
+                # s = self.gen_s(i)
+                new_traj[:, i] = np.matmul(factor(i), self.curve_array[:, i])
             return Trajectory(new_traj)
         # constant matrix multiplication
         elif type(factor) == np.ndarray:
@@ -135,25 +126,32 @@ class Trajectory:
 
     def __rmul__(self, factor):
         # scalar multiplication
-        if type(factor) == float or type(factor) == int:
-            return Trajectory(factor*self.curve_array)
-        # variable matrix multiplication
-        elif hasattr(factor, '__call__'):
-            s_disc = np.shape(self.curve_array)
-            new_traj = np.zeros(s_disc[1])
-            for i in range(s_disc[1]):
-                s = self.gen_s(i)
-                new_traj[:, i] = np.matmul(factor(s), self.curve_array[:, i])
-            return Trajectory(new_traj)
-        # constant matrix multiplication
-        elif type(factor) == np.ndarray:
-            return Trajectory(np.matmul(factor, self.curve_array))
-        else:
-            raise TypeError("Inputs are not of the correct type!")
+        # if type(factor) == float or type(factor) == int:
+        #     return Trajectory(factor*self.curve_array)
+        # # variable matrix multiplication
+        # elif hasattr(factor, '__call__'):
+        #     s_disc = np.shape(self.curve_array)
+        #     new_traj = np.zeros(s_disc)
+        #     for i in range(s_disc[1]):
+        #         # s = self.gen_s(i)
+        #         new_traj[:, i] = np.matmul(factor(i), self.curve_array[:, i])
+        #     return Trajectory(new_traj)
+        # # constant matrix multiplication
+        # elif type(factor) == np.ndarray:
+        #     return Trajectory(np.matmul(factor, self.curve_array))
+        # else:
+        #     raise TypeError("Inputs are not of the correct type!")
+        return self.__mul__(factor)
 
     def __pow__(self, exponent):
         # perform element-by-element exponentiation
         return Trajectory(self.curve_array ** exponent)
+
+    def __eq__(self, other_traj, rtol = 1e-6):
+        if not isinstance(other_traj, Trajectory):
+            raise TypeError("Inputs are not of the correct type!")
+        return np.allclose(self.curve_array, other_traj.curve_array, \
+            rtol = rtol)
 
     def traj_prod(self, other_traj):
         """
@@ -187,7 +185,8 @@ class Trajectory:
         if time_disc % 2 == 0:
             mode_array[:, time_disc//2] = 0
         # IFFT to get discrete time gradients
-        self.grad = Trajectory(np.fft.irfft(mode_array, axis = 1))
+        self.grad = Trajectory(np.fft.irfft(mode_array, axis = 1), \
+            comp_grad = False)
 
     def traj_response(self, sys):
         """
@@ -224,7 +223,31 @@ class Trajectory:
             response_array[:, i] = sys.response(self.curve_array[:, i])
         
         return Trajectory(response_array)
-    
+
+    def traj_nl_response(self, sys):
+        """
+            This method returns an instance of the Trajectory class for the
+            response at each location over the original trajectory of the non-
+            linear factor of the dynamical system.
+        """
+        # checks
+        if not isinstance(sys, System):
+            raise TypeError("Inputs are not of the correct type!")
+
+        # initialise arrays
+        array_size = np.shape(self.curve_array)
+        nl_response_array = np.zeros(array_size)
+
+        # calculate gradient of trajectory
+        if self.grad is None:
+            self.gradient()
+        
+        # evaluate response
+        for i in range(array_size[1]):
+            nl_response_array[:, i] = sys.nl_factor(self.curve_array[:, i])
+        
+        return Trajectory(nl_response_array)
+
     def jacob_init(self, sys):
         """
             Initialise a function that returns the jacobian of this dynamical
@@ -254,8 +277,9 @@ class Trajectory:
                     the discretised location on the trajectory
             """
             # test for index, and input as index instead of s
-            if type(i) != int:
+            if i%1 != 0:
                 raise TypeError("Inputs are not of the correct type!")
+            i = int(i)
             state = self.curve_array[:, i]
             return sys.jacobian(state)
         return jacobian
@@ -270,10 +294,27 @@ class Trajectory:
                 the norm of the vector-valued trajectory at each location it is
                 defined at
         """
-        norm_traj = np.zeros([1, np.shape(self.curve_array)[1]])
-        for i in range(np.shape(self.curve_array)[1]):
-            norm_traj[i] = np.linalg.norm(self.curve_array[:, i])
-        return Trajectory(norm_traj)
+        # norm_traj = np.zeros([1, np.shape(self.curve_array)[1]])
+        # for i in range(np.shape(self.curve_array)[1]):
+        #     norm_traj[0, i] = np.linalg.norm(self.curve_array[:, i])
+        # return Trajectory(norm_traj)
+        temp = np.linalg.norm(self.curve_array, axis = 0)
+        return Trajectory(temp)
+
+    def average_over_s(self):
+        """
+            This method performs integration of the trajectory over the domain
+            of s (0 to 2*pi), which is analogous to the L^2 norm of a vector-
+            valued function.
+        """
+        integ_traj = np.concatenate((self.curve_array, \
+            self.curve_array[:, 0:1]), axis = 1)
+        traj_disc = np.linspace(0, 2*np.pi, np.shape(integ_traj)[1])
+        integ_vec = np.zeros([np.shape(self.curve_array)[0]])
+        for i in range(np.shape(integ_traj)[0]):
+            integ_vec[i] = (1/(2*np.pi))*integ.trapz(integ_traj[i, :], \
+                traj_disc)
+        return integ_vec
 
     def plot(self, gradient = False, gradient_density = None):
         """
@@ -333,6 +374,7 @@ class Trajectory:
 
 if __name__ == '__main__':
     from test_cases import unit_circle as circ
+    from test_cases import ellipse as elps
 
     unit_circle1 = Trajectory(circ.x)
     unit_circle2 = 0.5*Trajectory(circ.x)
@@ -342,3 +384,5 @@ if __name__ == '__main__':
     unit_circle1.plot(gradient = True, gradient_density = 32/256)
     unit_circle3.plot(gradient = True, gradient_density = 32/256)
     
+    ellipse = Trajectory(elps.x)
+    ellipse.plot(gradient = True, gradient_density = 32/256)
