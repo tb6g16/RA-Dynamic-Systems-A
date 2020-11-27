@@ -40,7 +40,7 @@ class Trajectory:
     
     __slots__ = ['curve_array', 'curve_func', 'grad']
 
-    def __init__(self, curve, comp_grad = True):
+    def __init__(self, curve, comp_grad = True, disc = 64):
         """
             Initialise an instance of the Trajectory object, with either a
             continuous of discrete time function.
@@ -65,7 +65,7 @@ class Trajectory:
                 raise AttributeError("The trajectory array has to 2D (only \
                 rows and columns)!")
         elif hasattr(curve, '__call__'):    
-            self.curve_array = self.func2array(curve)
+            self.curve_array = self.func2array(curve, time_disc = disc)
             self.curve_func = curve
             if comp_grad == True:
                 self.gradient()

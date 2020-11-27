@@ -17,8 +17,8 @@ class TestTrajectory(unittest.TestCase):
 
     def setUp(self):
         a = 1
-        self.traj1 = Trajectory(uc.x)
-        self.traj2 = Trajectory(elps.x)
+        self.traj1 = Trajectory(uc.x, disc = 64)
+        self.traj2 = Trajectory(elps.x, disc = 64)
         self.traj3 = Trajectory(self.traj1.curve_array + a)
         self.sys1 = System(vpd)
         self.sys1.parameters['mu'] = 0
@@ -30,7 +30,27 @@ class TestTrajectory(unittest.TestCase):
         self.sys2.parameters['mu'] = 0
 
     def test_func2array(self):
-        pass
+        # output correct size
+        self.assertEqual(self.traj1.curve_array.shape, (2, 64))
+        self.assertEqual(self.traj2.curve_array.shape, (2, 64))
+
+        # outputs are numbers
+        self.assertTrue(self.traj1.curve_array.dtype == np.int64 or \
+            self.traj1.curve_array.dtype == np.float64)
+        self.assertTrue(self.traj2.curve_array.dtype == np.int64 or \
+            self.traj2.curve_array.dtype == np.float64)
+
+        # correct values
+        rindex1 = int(rand.random()*np.shape(self.traj1.curve_array)[1])
+        rindex2 = int(rand.random()*np.shape(self.traj2.curve_array)[1])
+        rs1 = ((2*np.pi)/(np.shape(self.traj1.curve_array)[1]))*rindex1
+        rs2 = ((2*np.pi)/(np.shape(self.traj2.curve_array)[1]))*rindex2
+        traj1_val = self.traj1.curve_array[:, rindex1]
+        traj2_val = self.traj2.curve_array[:, rindex2]
+        traj1_true = uc.x(rs1)
+        traj2_true = elps.x(rs2)
+        self.assertTrue(np.allclose(traj1_val, traj1_true))
+        self.assertTrue(np.allclose(traj2_val, traj2_true))
 
     def test_traj_prod(self):
         new_traj1 = self.traj1.traj_prod(self.traj2)
