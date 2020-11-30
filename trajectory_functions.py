@@ -100,25 +100,25 @@ def traj_inner_prod(traj1, traj2):
     
     return Trajectory(product_array)
 
-def traj_response(traj, sys):
+def traj_func_response(traj, func):
     """
-        This function calculates the response at each location along a given
-        trajectory within the state-space of a given system.
+        This function evaluates the response over the domain of a given
+        trajectory due to a given dyanmical system.
 
         Parameters
         ----------
         traj: Trajectory object
-            the given trajectory for which the response will be calculated
-            along
-        sys: System object
-            the dynamical system that defines the state-space the trajectory
-            is in
+            the trajectory over which the response will be evaluated
+        func: function
+            the function that defines the response at each location along the
+            trajectory, must be a function that inputs a vector and outputs a
+            vector of the same size
         
         Returns
         -------
-        traj_resp: Trajectory object
-            the response of the system at each location along the given
-            trajectory
+        response_traj: Trajectory object
+            the response at each location of the trajectory, given as an
+            instance of the Trajectory class
     """
     # initialise arrays
     array_size = np.shape(traj.curve_array)
@@ -126,23 +126,9 @@ def traj_response(traj, sys):
     
     # evaluate response
     for i in range(array_size[1]):
-        response_array[:, i] = sys.response(traj.curve_array[:, i])
+        response_array[:, i] = func(traj.curve_array[:, i])
     
     return Trajectory(response_array)
-
-def traj_nl_response(traj, sys):
-    """
-        This function is redundant and will be removed once I've finished this.
-    """
-    # initialise arrays
-    array_size = np.shape(traj.curve_array)
-    nl_response_array = np.zeros(array_size)
-    
-    # evaluate response
-    for i in range(array_size[1]):
-        nl_response_array[:, i] = sys.nl_factor(traj.curve_array[:, i])
-    
-    return Trajectory(nl_response_array)
 
 def jacob_init(traj, sys):
     """

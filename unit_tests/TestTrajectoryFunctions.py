@@ -111,33 +111,64 @@ class TestTrajectoryFunctions(unittest.TestCase):
         self.assertEqual(traj1_grad, self.traj1_grad)
         self.assertEqual(traj2_grad, self.traj2_grad)
 
-    def test_traj_response(self):
-        traj1_response1 = traj_funcs.traj_response(self.traj1, self.sys1)
-        traj1_response2 = traj_funcs.traj_response(self.traj1, self.sys2)
-        traj2_response1 = traj_funcs.traj_response(self.traj2, self.sys1)
-        traj2_response2 = traj_funcs.traj_response(self.traj2, self.sys2)
+    def test_traj_func_response(self):
+        # response to full system
+        traj1_response1 = traj_funcs.traj_func_response(self.traj1, \
+            self.sys1.response)
+        traj1_response2 = traj_funcs.traj_func_response(self.traj1, \
+            self.sys2.response)
+        traj2_response1 = traj_funcs.traj_func_response(self.traj2, \
+            self.sys1.response)
+        traj2_response2 = traj_funcs.traj_func_response(self.traj2, \
+            self.sys2.response)
+        traj1_nl1 = traj_funcs.traj_func_response(self.traj1, \
+            self.sys1.nl_factor)
+        traj1_nl2 = traj_funcs.traj_func_response(self.traj1, \
+            self.sys2.nl_factor)
+        traj2_nl1 = traj_funcs.traj_func_response(self.traj2, \
+            self.sys1.nl_factor)
+        traj2_nl2 = traj_funcs.traj_func_response(self.traj2, \
+            self.sys2.nl_factor)
         
         # output is of the Trajectory class
         self.assertIsInstance(traj1_response1, Trajectory)
         self.assertIsInstance(traj1_response2, Trajectory)
         self.assertIsInstance(traj2_response1, Trajectory)
         self.assertIsInstance(traj2_response2, Trajectory)
+        self.assertIsInstance(traj1_nl1, Trajectory)
+        self.assertIsInstance(traj1_nl2, Trajectory)
+        self.assertIsInstance(traj2_nl1, Trajectory)
+        self.assertIsInstance(traj2_nl2, Trajectory)
 
         # outputs are numbers
-        temp = True
+        temp1 = True
         if traj1_response1.curve_array.dtype != np.int64 and \
             traj1_response1.curve_array.dtype != np.float64:
-            temp = False
+            temp1 = False
         if traj1_response2.curve_array.dtype != np.int64 and \
             traj1_response2.curve_array.dtype != np.float64:
-            temp = False
-        if traj1_response2.curve_array.dtype != np.int64 and \
-            traj1_response2.curve_array.dtype != np.float64:
-            temp = False
+            temp1 = False
+        if traj2_response1.curve_array.dtype != np.int64 and \
+            traj2_response1.curve_array.dtype != np.float64:
+            temp1 = False
         if traj2_response2.curve_array.dtype != np.int64 and \
             traj2_response2.curve_array.dtype != np.float64:
-            temp = False
-        self.assertTrue(temp)
+            temp1 = False
+        temp2 = True
+        if traj1_nl1.curve_array.dtype != np.int64 and \
+            traj1_nl1.curve_array.dtype != np.float64:
+            temp2 = False
+        if traj1_nl2.curve_array.dtype != np.int64 and \
+            traj1_nl2.curve_array.dtype != np.float64:
+            temp2 = False
+        if traj2_nl1.curve_array.dtype != np.int64 and \
+            traj2_nl1.curve_array.dtype != np.float64:
+            temp2 = False
+        if traj2_nl2.curve_array.dtype != np.int64 and \
+            traj2_nl2.curve_array.dtype != np.float64:
+            temp2 = False
+        self.assertTrue(temp1)
+        self.assertTrue(temp2)
 
         # same response for trajectories at crossing points
         cross_i1 = int(((self.traj1.curve_array.shape[1])/(2*np.pi))*(np.pi/2))
@@ -154,55 +185,18 @@ class TestTrajectoryFunctions(unittest.TestCase):
         self.assertTrue(np.allclose(traj1_cross2_resp1, traj2_cross2_resp1))
         self.assertTrue(np.allclose(traj1_cross1_resp2, traj2_cross1_resp2))
         self.assertTrue(np.allclose(traj1_cross2_resp2, traj2_cross2_resp2))
-
-        # gradient of solution equal to response
-        self.sys2.parameters['mu'] = 1
-        self.assertEqual(self.traj1_grad, traj1_response1)
-        self.assertEqual(self.traj1_grad, traj1_response2)
-
-    def test_traj_nl_response(self):
-        traj1_response1 = traj_funcs.traj_nl_response(self.traj1, self.sys1)
-        traj1_response2 = traj_funcs.traj_nl_response(self.traj1, self.sys2)
-        traj2_response1 = traj_funcs.traj_nl_response(self.traj2, self.sys1)
-        traj2_response2 = traj_funcs.traj_nl_response(self.traj2, self.sys2)
-
-        # output is of the Trajectory class
-        self.assertIsInstance(traj1_response1, Trajectory)
-        self.assertIsInstance(traj1_response2, Trajectory)
-        self.assertIsInstance(traj2_response1, Trajectory)
-        self.assertIsInstance(traj2_response2, Trajectory)
-
-        # outputs are numbers
-        temp = True
-        if traj1_response1.curve_array.dtype != np.int64 and \
-            traj1_response1.curve_array.dtype != np.float64:
-            temp = False
-        if traj1_response2.curve_array.dtype != np.int64 and \
-            traj1_response2.curve_array.dtype != np.float64:
-            temp = False
-        if traj1_response2.curve_array.dtype != np.int64 and \
-            traj1_response2.curve_array.dtype != np.float64:
-            temp = False
-        if traj2_response2.curve_array.dtype != np.int64 and \
-            traj2_response2.curve_array.dtype != np.float64:
-            temp = False
-        self.assertTrue(temp)
-
-        # same response for trajectories at crossing points
-        cross_i1 = int(((self.traj1.curve_array.shape[1])/(2*np.pi))*(np.pi/2))
-        cross_i2 = int(((self.traj1.curve_array.shape[1])/(2*np.pi))*((3*np.pi)/2))
-        traj1_cross1_resp1 = traj1_response1.curve_array[:, cross_i1]
-        traj2_cross1_resp1 = traj2_response1.curve_array[:, cross_i1]
-        traj1_cross2_resp1 = traj1_response1.curve_array[:, cross_i2]
-        traj2_cross2_resp1 = traj2_response1.curve_array[:, cross_i2]
-        traj1_cross1_resp2 = traj1_response2.curve_array[:, cross_i1]
-        traj2_cross1_resp2 = traj2_response2.curve_array[:, cross_i1]
-        traj1_cross2_resp2 = traj1_response2.curve_array[:, cross_i2]
-        traj2_cross2_resp2 = traj2_response2.curve_array[:, cross_i2]
-        self.assertTrue(np.allclose(traj1_cross1_resp1, traj2_cross1_resp1))
-        self.assertTrue(np.allclose(traj1_cross2_resp1, traj2_cross2_resp1))
-        self.assertTrue(np.allclose(traj1_cross1_resp2, traj2_cross1_resp2))
-        self.assertTrue(np.allclose(traj1_cross2_resp2, traj2_cross2_resp2))
+        traj1_cross1_nl1 = traj1_nl1.curve_array[:, cross_i1]
+        traj2_cross1_nl1 = traj2_nl1.curve_array[:, cross_i1]
+        traj1_cross2_nl1 = traj1_nl1.curve_array[:, cross_i2]
+        traj2_cross2_nl1 = traj2_nl1.curve_array[:, cross_i2]
+        traj1_cross1_nl2 = traj1_nl2.curve_array[:, cross_i1]
+        traj2_cross1_nl2 = traj2_nl2.curve_array[:, cross_i1]
+        traj1_cross2_nl2 = traj1_nl2.curve_array[:, cross_i2]
+        traj2_cross2_nl2 = traj2_nl2.curve_array[:, cross_i2]
+        self.assertTrue(np.allclose(traj1_cross1_nl1, traj2_cross1_nl1))
+        self.assertTrue(np.allclose(traj1_cross2_nl1, traj2_cross2_nl1))
+        self.assertTrue(np.allclose(traj1_cross1_nl2, traj2_cross1_nl2))
+        self.assertTrue(np.allclose(traj1_cross2_nl2, traj2_cross2_nl2))
 
     def test_jacob_init(self):
         self.sys1.parameters['mu'] = 1
