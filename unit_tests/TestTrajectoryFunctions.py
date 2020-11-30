@@ -1,5 +1,5 @@
-# This file contains the testing methods for the Trajectory class and its
-# contained methods.
+# This file contains the testing methods for the functions defined in
+# trajectory_functions
 
 import sys
 sys.path.append(r"C:\Users\user\Desktop\PhD\Bruno Paper\Code\RA Dynamical System")
@@ -7,102 +7,86 @@ import unittest
 import numpy as np
 import random as rand
 from Trajectory import Trajectory
+import trajectory_functions as traj_funcs
 from System import System
 from test_cases import unit_circle as uc
 from test_cases import ellipse as elps
 from test_cases import van_der_pol as vpd
 from test_cases import viswanath as vis
 
-class TestTrajectory(unittest.TestCase):
+class TestTrajectoryFunctions(unittest.TestCase):
 
     def setUp(self):
         a = 1
         self.traj1 = Trajectory(uc.x, disc = 64)
+        self.traj1_grad = traj_funcs.traj_grad(self.traj1)
         self.traj2 = Trajectory(elps.x, disc = 64)
+        self.traj2_grad = traj_funcs.traj_grad(self.traj2)
         self.traj3 = Trajectory(self.traj1.curve_array + a)
+        self.traj3_grad = traj_funcs.traj_grad(self.traj3)
         self.sys1 = System(vpd)
         self.sys1.parameters['mu'] = 0
         self.sys2 = System(vis)
         self.sys2.parameters['mu'] = 0
 
     def tearDown(self):
-        self.sys1.parameters['mu'] = 0
-        self.sys2.parameters['mu'] = 0
-
-    def test_func2array(self):
-        # output correct size
-        self.assertEqual(self.traj1.curve_array.shape, (2, 64))
-        self.assertEqual(self.traj2.curve_array.shape, (2, 64))
-
-        # outputs are numbers
-        self.assertTrue(self.traj1.curve_array.dtype == np.int64 or \
-            self.traj1.curve_array.dtype == np.float64)
-        self.assertTrue(self.traj2.curve_array.dtype == np.int64 or \
-            self.traj2.curve_array.dtype == np.float64)
-
-        # correct values
-        rindex1 = int(rand.random()*np.shape(self.traj1.curve_array)[1])
-        rindex2 = int(rand.random()*np.shape(self.traj2.curve_array)[1])
-        rs1 = ((2*np.pi)/(np.shape(self.traj1.curve_array)[1]))*rindex1
-        rs2 = ((2*np.pi)/(np.shape(self.traj2.curve_array)[1]))*rindex2
-        traj1_val = self.traj1.curve_array[:, rindex1]
-        traj2_val = self.traj2.curve_array[:, rindex2]
-        traj1_true = uc.x(rs1)
-        traj2_true = elps.x(rs2)
-        self.assertTrue(np.allclose(traj1_val, traj1_true))
-        self.assertTrue(np.allclose(traj2_val, traj2_true))
+        del self.traj1
+        del self.traj2
+        del self.traj3
+        del self.sys1
+        del self.sys2
 
     def test_traj_prod(self):
-        new_traj1 = self.traj1.traj_prod(self.traj2)
-        new_traj2 = self.traj2.traj_prod(self.traj1)
+        traj1_traj1_prod = traj_funcs.traj_inner_prod(self.traj1, self.traj1)
+        traj2_traj2_prod = traj_funcs.traj_inner_prod(self.traj2, self.traj2)
+        traj1_traj2_prod = traj_funcs.traj_inner_prod(self.traj1, self.traj2)
+        traj2_traj1_prod = traj_funcs.traj_inner_prod(self.traj2, self.traj1)
 
         # output is of the Trajectory class
-        self.assertIsInstance(new_traj1, Trajectory)
-        self.assertIsInstance(new_traj2, Trajectory)
+        self.assertIsInstance(traj1_traj2_prod, Trajectory)
+        self.assertIsInstance(traj2_traj1_prod, Trajectory)
 
         # does the operation commute
-        self.assertEqual(new_traj1, new_traj2)
+        self.assertEqual(traj1_traj2_prod, traj2_traj1_prod)
 
         # inner product equal to norm
-        self.assertEqual(self.traj1.normed_traj()**2, \
-            self.traj1.traj_prod(self.traj1))
-        self.assertEqual(self.traj2.normed_traj()**2, \
-            self.traj2.traj_prod(self.traj2))
+        self.assertEqual(traj_funcs.traj_norm(self.traj1)**2, traj1_traj1_prod)
+        self.assertEqual(traj_funcs.traj_norm(self.traj2)**2, traj2_traj2_prod)
 
         # single number at each index
         temp1 = True
-        for i in range(np.shape(new_traj1.curve_array)[1]):
-            if new_traj1.curve_array[:, i].shape[0] != 1:
+        for i in range(np.shape(traj1_traj2_prod.curve_array)[1]):
+            if traj1_traj2_prod.curve_array[:, i].shape[0] != 1:
                 temp1 = False
-        for i in range(new_traj2.curve_array.shape[1]):
-            if new_traj2.curve_array[:, i].shape[0] != 1:
+        for i in range(traj2_traj1_prod.curve_array.shape[1]):
+            if traj2_traj1_prod.curve_array[:, i].shape[0] != 1:
                 temp1 = False
         self.assertTrue(temp1)
 
         # outputs are numbers
         temp2 = True
-        if new_traj1.curve_array.dtype != np.int64 and \
-            new_traj1.curve_array.dtype != np.float64:
+        if traj1_traj2_prod.curve_array.dtype != np.int64 and \
+            traj1_traj2_prod.curve_array.dtype != np.float64:
             temp2 = False
-        if new_traj2.curve_array.dtype != np.int64 and \
-            new_traj2.curve_array.dtype != np.float64:
+        if traj2_traj1_prod.curve_array.dtype != np.int64 and \
+            traj2_traj1_prod.curve_array.dtype != np.float64:
             temp2 = False
         self.assertTrue(temp2)
 
     def test_gradient(self):
         # same shape as original trajectories
         self.assertEqual(self.traj1.curve_array.shape, \
-            self.traj1.grad.curve_array.shape)
+            self.traj1_grad.curve_array.shape)
         self.assertEqual(self.traj2.curve_array.shape, \
-            self.traj2.grad.curve_array.shape)
+            self.traj2_grad.curve_array.shape)
 
         # outputs are real numbers
         temp = True
-        if self.traj1.grad.curve_array.dtype != np.int64 and \
-            self.traj1.grad.curve_array.dtype != np.float64:
+        if self.traj1_grad.curve_array.dtype != np.int64 and \
+            self.traj1_grad.curve_array.dtype != np.float64:
             temp = False
-        if self.traj2.grad.curve_array.dtype != np.int64 and \
-            self.traj2.grad.curve_array.dtype != np.float64:
+        if self.traj2_grad.curve_array.dtype != np.int64 and \
+            self.traj2_grad.curve_array.dtype != np.float64:
             temp = False
         self.assertTrue(temp)
 
@@ -117,14 +101,14 @@ class TestTrajectory(unittest.TestCase):
             traj2_grad[1, i] = -np.cos(s)
         traj1_grad = Trajectory(traj1_grad)
         traj2_grad = Trajectory(traj2_grad)
-        self.assertEqual(traj1_grad, self.traj1.grad)
-        self.assertEqual(traj2_grad, self.traj2.grad)
+        self.assertEqual(traj1_grad, self.traj1_grad)
+        self.assertEqual(traj2_grad, self.traj2_grad)
 
     def test_traj_response(self):
-        traj1_response1 = self.traj1.traj_response(self.sys1)
-        traj1_response2 = self.traj1.traj_response(self.sys2)
-        traj2_response1 = self.traj2.traj_response(self.sys1)
-        traj2_response2 = self.traj2.traj_response(self.sys2)
+        traj1_response1 = traj_funcs.traj_response(self.traj1, self.sys1)
+        traj1_response2 = traj_funcs.traj_response(self.traj1, self.sys2)
+        traj2_response1 = traj_funcs.traj_response(self.traj2, self.sys1)
+        traj2_response2 = traj_funcs.traj_response(self.traj2, self.sys2)
         
         # output is of the Trajectory class
         self.assertIsInstance(traj1_response1, Trajectory)
@@ -166,14 +150,14 @@ class TestTrajectory(unittest.TestCase):
 
         # gradient of solution equal to response
         self.sys2.parameters['mu'] = 1
-        self.assertEqual(self.traj1.grad, traj1_response1)
-        self.assertEqual(self.traj1.grad, traj1_response2)
+        self.assertEqual(self.traj1_grad, traj1_response1)
+        self.assertEqual(self.traj1_grad, traj1_response2)
 
     def test_traj_nl_response(self):
-        traj1_response1 = self.traj1.traj_nl_response(self.sys1)
-        traj1_response2 = self.traj1.traj_nl_response(self.sys2)
-        traj2_response1 = self.traj2.traj_nl_response(self.sys1)
-        traj2_response2 = self.traj2.traj_nl_response(self.sys2)
+        traj1_response1 = traj_funcs.traj_nl_response(self.traj1, self.sys1)
+        traj1_response2 = traj_funcs.traj_nl_response(self.traj1, self.sys2)
+        traj2_response1 = traj_funcs.traj_nl_response(self.traj2, self.sys1)
+        traj2_response2 = traj_funcs.traj_nl_response(self.traj2, self.sys2)
 
         # output is of the Trajectory class
         self.assertIsInstance(traj1_response1, Trajectory)
@@ -216,8 +200,8 @@ class TestTrajectory(unittest.TestCase):
     def test_jacob_init(self):
         self.sys1.parameters['mu'] = 1
         self.sys2.parameters['mu'] = 1
-        sys1_jac = self.traj1.jacob_init(self.sys1)
-        sys2_jac = self.traj2.jacob_init(self.sys2)
+        sys1_jac = traj_funcs.jacob_init(self.traj1, self.sys1)
+        sys2_jac = traj_funcs.jacob_init(self.traj2, self.sys2)
 
         # outputs are numbers
         temp1 = True
@@ -248,8 +232,8 @@ class TestTrajectory(unittest.TestCase):
         self.assertTrue(np.allclose(output2, sys2_jac_true))
 
     def test_normed_traj(self):
-        traj1_normed = self.traj1.normed_traj()
-        traj2_normed = self.traj2.normed_traj()
+        traj1_normed = traj_funcs.traj_norm(self.traj1)
+        traj2_normed = traj_funcs.traj_norm(self.traj2)
 
         # output is of the Trajectory class
         self.assertIsInstance(traj1_normed, Trajectory)
@@ -286,9 +270,9 @@ class TestTrajectory(unittest.TestCase):
         self.assertEqual(traj2_normed, traj2_norm_true)
 
     def test_average_over_s(self):
-        traj1_av = self.traj1.average_over_s()
-        traj2_av = self.traj2.average_over_s()
-        traj3_av = self.traj3.average_over_s()
+        traj1_av = traj_funcs.average_over_s(self.traj1)
+        traj2_av = traj_funcs.average_over_s(self.traj2)
+        traj3_av = traj_funcs.average_over_s(self.traj3)
 
         # outputs are numbers
         self.assertEqual(traj1_av.shape, (2,))
@@ -302,8 +286,6 @@ class TestTrajectory(unittest.TestCase):
         # non-zero average for offset circle
         self.assertTrue(np.allclose(traj3_av, np.ones(traj3_av.shape)))
 
-    def test_mul(self):
-        pass
 
 if __name__ == "__main__":
     unittest.main()
