@@ -100,7 +100,7 @@ def traj_inner_prod(traj1, traj2):
     
     return Trajectory(product_array)
 
-def traj_func_response(traj, func):
+def traj_response(traj, func):
     """
         This function evaluates the response over the domain of a given
         trajectory due to a given dyanmical system.

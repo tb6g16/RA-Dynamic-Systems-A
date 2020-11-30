@@ -111,23 +111,23 @@ class TestTrajectoryFunctions(unittest.TestCase):
         self.assertEqual(traj1_grad, self.traj1_grad)
         self.assertEqual(traj2_grad, self.traj2_grad)
 
-    def test_traj_func_response(self):
+    def test_traj_response(self):
         # response to full system
-        traj1_response1 = traj_funcs.traj_func_response(self.traj1, \
+        traj1_response1 = traj_funcs.traj_response(self.traj1, \
             self.sys1.response)
-        traj1_response2 = traj_funcs.traj_func_response(self.traj1, \
+        traj1_response2 = traj_funcs.traj_response(self.traj1, \
             self.sys2.response)
-        traj2_response1 = traj_funcs.traj_func_response(self.traj2, \
+        traj2_response1 = traj_funcs.traj_response(self.traj2, \
             self.sys1.response)
-        traj2_response2 = traj_funcs.traj_func_response(self.traj2, \
+        traj2_response2 = traj_funcs.traj_response(self.traj2, \
             self.sys2.response)
-        traj1_nl1 = traj_funcs.traj_func_response(self.traj1, \
+        traj1_nl1 = traj_funcs.traj_response(self.traj1, \
             self.sys1.nl_factor)
-        traj1_nl2 = traj_funcs.traj_func_response(self.traj1, \
+        traj1_nl2 = traj_funcs.traj_response(self.traj1, \
             self.sys2.nl_factor)
-        traj2_nl1 = traj_funcs.traj_func_response(self.traj2, \
+        traj2_nl1 = traj_funcs.traj_response(self.traj2, \
             self.sys1.nl_factor)
-        traj2_nl2 = traj_funcs.traj_func_response(self.traj2, \
+        traj2_nl2 = traj_funcs.traj_response(self.traj2, \
             self.sys2.nl_factor)
         
         # output is of the Trajectory class
