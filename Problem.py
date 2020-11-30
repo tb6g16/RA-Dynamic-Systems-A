@@ -51,8 +51,7 @@ class Problem:
         self.fundamental_freq.append(fundamental_freq)
         self.global_residual = []
         self.global_residual.append(self.compute_global_residual())
-    
-    # NEEDS VALIDATION
+
     def local_residual(self, trajectory = -1):
         """
             This function computes the local residual vector along the whole
@@ -88,7 +87,6 @@ class Problem:
             self.trajectories[trajectory].grad.curve_array) - response_array
         return residual_array
 
-    # NEEDS VALIDATION
     def compute_global_residual(self, trajectory = -1):
         """
             This method computes the global residual between an instance of the

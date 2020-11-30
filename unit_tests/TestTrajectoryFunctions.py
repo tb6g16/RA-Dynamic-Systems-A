@@ -50,8 +50,15 @@ class TestTrajectoryFunctions(unittest.TestCase):
         self.assertEqual(traj1_traj2_prod, traj2_traj1_prod)
 
         # inner product equal to norm
-        self.assertEqual(traj_funcs.traj_norm(self.traj1)**2, traj1_traj1_prod)
-        self.assertEqual(traj_funcs.traj_norm(self.traj2)**2, traj2_traj2_prod)
+        traj1_norm = np.ones([1, np.shape(self.traj1.curve_array)[1]])
+        traj1_norm = Trajectory(traj1_norm)
+        traj2_norm = np.zeros([1, np.shape(self.traj2.curve_array)[1]])
+        for i in range(np.shape(self.traj2.curve_array)[1]):
+            s = ((2*np.pi)/np.shape(self.traj2.curve_array)[1])*i
+            traj2_norm[0, i] = (4*(np.cos(s)**2)) + (np.sin(s)**2)
+        traj2_norm = Trajectory(traj2_norm)
+        self.assertEqual(traj1_norm, traj1_traj1_prod)
+        self.assertEqual(traj2_norm, traj2_traj2_prod)
 
         # single number at each index
         temp1 = True
@@ -230,44 +237,6 @@ class TestTrajectoryFunctions(unittest.TestCase):
         sys2_jac_true = vis.jacobian(rstate2)
         self.assertTrue(np.allclose(output1, sys1_jac_true))
         self.assertTrue(np.allclose(output2, sys2_jac_true))
-
-    def test_normed_traj(self):
-        traj1_normed = traj_funcs.traj_norm(self.traj1)
-        traj2_normed = traj_funcs.traj_norm(self.traj2)
-
-        # output is of the Trajectory class
-        self.assertIsInstance(traj1_normed, Trajectory)
-        self.assertIsInstance(traj2_normed, Trajectory)
-
-        # single number at each index
-        temp1 = True
-        for i in range(traj1_normed.curve_array.shape[1]):
-            if traj1_normed.curve_array[:, i].shape[0] != 1:
-                temp1 = False
-        for i in range(traj2_normed.curve_array.shape[1]):
-            if traj2_normed.curve_array[:, i].shape[0] != 1:
-                temp1 = False
-        self.assertTrue(temp1)
-        
-        # outputs are numbers
-        temp2 = True
-        if traj1_normed.curve_array.dtype != np.int64 and \
-            traj1_normed.curve_array.dtype != np.float64:
-            temp2 = False
-        if traj2_normed.curve_array.dtype != np.int64 and \
-            traj2_normed.curve_array.dtype != np.float64:
-            temp2 = False
-        self.assertTrue(temp2)
-
-        # correct values for known cases
-        traj1_norm_true = Trajectory(np.ones(traj1_normed.curve_array.shape))
-        traj2_norm_true = np.zeros(traj2_normed.curve_array.shape)
-        for i in range(np.shape(traj2_norm_true)[1]):
-            traj2_norm_true[:, i] = np.sqrt((self.traj2.curve_array[0, i]**2) \
-                + (self.traj2.curve_array[1, i]**2))
-        traj2_norm_true = Trajectory(traj2_norm_true)
-        self.assertEqual(traj1_normed, traj1_norm_true)
-        self.assertEqual(traj2_normed, traj2_norm_true)
 
     def test_average_over_s(self):
         traj1_av = traj_funcs.average_over_s(self.traj1)

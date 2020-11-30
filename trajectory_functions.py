@@ -39,24 +39,6 @@ def traj_grad(traj):
     # IFFT to get discrete time gradients
     return Trajectory(np.fft.irfft(mode_array, axis = 1))
 
-def traj_norm(traj):
-    """
-        This function calculates the Euclidean norm of a given trajectory for
-        each location in the parametric domain, s.
-
-        Parameters
-        ----------
-        traj: Trajectory object
-            the given trajectory which we will calculate the norm of at each
-            location, s
-        
-        Returns
-        -------
-        normed_traj: Trajectory object
-            the norm of the trajectory at each location, s
-    """
-    return Trajectory(np.linalg.norm(traj.curve_array, axis = 0))
-
 def average_over_s(traj):
     """
         This function calculates the average of a trajectory over its time
