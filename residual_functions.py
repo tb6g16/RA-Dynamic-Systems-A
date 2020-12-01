@@ -5,8 +5,9 @@ import numpy as np
 import scipy.integrate as integ
 from Trajectory import Trajectory
 from System import System
+import trajectory_functions as traj_funcs
 
-def local_residual(traj, sys):
+def local_residual(traj, sys, freq):
     """
         This function calculates the local residual of a trajectory through a
         state-space defined by a given dynamical system.
@@ -24,9 +25,16 @@ def local_residual(traj, sys):
             the local residual of the trajectory with respect to the dynamical
             system, given as an instance of the Trajectory class
     """
-    pass
+    # compute gradient of trajectory
+    traj_grad = traj_funcs.traj_grad(traj)
 
-def global_residual(traj, sys):
+    # evaluate system response at the states of the trajectory
+    response = traj_funcs.traj_response(traj, sys.response)
+
+    # compute and return local residual trajectory
+    return (freq*traj_grad) - response
+
+def global_residual(traj, sys, freq):
     """
         This function calculates the global residual of a trajectory through a
         state-space defined by a given dynamical system.
@@ -43,7 +51,14 @@ def global_residual(traj, sys):
         global_res: float
             the global residual of the trajectory-system pair
     """
-    pass
+    # obtain set of local residual vectors
+    local_res = local_residual(traj, sys, freq)
+
+    # take norm of the local residual vectors
+    local_res_norm = traj_funcs.traj_inner_prod(local_res, local_res)**0.5
+    
+    # integrate over the discretised time
+    return 0.5*traj_funcs.average_over_s(local_res_norm)
 
 def global_residual_grad(traj, sys):
     """
