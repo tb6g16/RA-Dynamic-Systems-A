@@ -97,14 +97,21 @@ class System:
 
 if __name__ == "__main__":
     from test_cases import van_der_pol as vpd
+    from test_cases import viswanath as vis
 
-    system = System(vpd)
+    system1 = System(vpd)
+    system2 = System(vis)
     
-    system.plot(domain = [[-2, 2], [-2, 2]])
-    system.parameters['mu'] = 1
-    system.plot(domain = [[-2, 2], [-2, 2]])
-    system.parameters['mu'] = 2
-    system.plot(domain = [[-2, 2], [-2, 2]])
+    # system1.plot(domain = [[-2, 2], [-2, 2]])
+    # system1.parameters['mu'] = 1
+    # system1.plot(domain = [[-2, 2], [-2, 2]])
+    # system1.parameters['mu'] = 2
+    # system1.plot(domain = [[-2, 2], [-2, 2]])
+
+    system2.parameters['mu'] = 2
+    system2.plot(domain = [[-2, 2], [-2, 2]])
+    system2.parameters['r'] = 0.5
+    system2.plot(domain = [[-2, 2], [-2, 2]])
 
     # print(system.response(np.ones([2, 1])))
     # print(system.nl_factor(np.ones([2, 1])))

@@ -25,9 +25,7 @@ class TestTrajectoryFunctions(unittest.TestCase):
         self.traj3 = Trajectory(self.traj1.curve_array + a)
         self.traj3_grad = traj_funcs.traj_grad(self.traj3)
         self.sys1 = System(vpd)
-        self.sys1.parameters['mu'] = 0
         self.sys2 = System(vis)
-        self.sys2.parameters['mu'] = 0
 
     def tearDown(self):
         del self.traj1
