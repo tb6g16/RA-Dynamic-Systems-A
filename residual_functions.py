@@ -18,6 +18,8 @@ def local_residual(traj, sys, freq):
             the trajectory through state-space
         sys: System object
             the dynamical system defining the state-space
+        freq: float
+            the fundamental frequency of the trajectory
         
         Returns
         -------
@@ -45,6 +47,8 @@ def global_residual(traj, sys, freq):
             the trajectory through state-space
         sys: System object
             the dynamical system defining the state-space
+        freq: float
+            the fundamental frequency of the trajectory
         
         Returns
         -------
@@ -60,7 +64,7 @@ def global_residual(traj, sys, freq):
     # integrate over the discretised time
     return 0.5*traj_funcs.average_over_s(local_res_norm)
 
-def global_residual_grad(traj, sys):
+def global_residual_grad(traj, sys, freq):
     """
         This function calculates the gradient of the global residual with
         respect to the trajectory and the associated fundamental frequency for
@@ -72,6 +76,8 @@ def global_residual_grad(traj, sys):
             the trajectory through state-space
         sys: System object
             the dynamical system defining the state-space
+        freq: float
+            the fundamental frequency of the trajectory
         
         Returns
         -------
@@ -81,4 +87,26 @@ def global_residual_grad(traj, sys):
         d_gr_wrt_freq: float
             the gradient of the global residual with respect to the trajectory
     """
-    pass
+    # calculate local residual trajectory
+    local_res = local_residual(traj, sys, freq)
+
+    # calculate trajectory gradients
+    traj_grad = traj_funcs.traj_grad(traj)
+    res_grad = traj_funcs.traj_grad(local_res)
+
+    # initialise jacobian function
+    jacob_func = traj_funcs.jacob_init(traj, sys)
+
+    # take norm of trajectory
+    traj_norm = traj_funcs.traj_inner_prod(traj, traj)**0.5
+
+    # take response of trajectory to dynamical system
+    traj_resp = traj_funcs.traj_response(traj, sys.response)
+    
+    # define integrand trajectory to be integrated
+    int_traj = (2*freq*(traj_norm**2)) - \
+        (2*traj_funcs.traj_inner_prod(traj_resp, traj_grad))
+
+    # calculate and return gradients w.r.t trajectory and frequency respectively
+    return (-freq*res_grad) + (jacob_func*local_res), \
+        traj_funcs.average_over_s(int_traj)
