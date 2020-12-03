@@ -34,7 +34,7 @@ class TestTrajectoryFunctions(unittest.TestCase):
         del self.sys1
         del self.sys2
 
-    def test_traj_prod(self):
+    def test_traj_inner_prod(self):
         traj1_traj1_prod = traj_funcs.traj_inner_prod(self.traj1, self.traj1)
         traj2_traj2_prod = traj_funcs.traj_inner_prod(self.traj2, self.traj2)
         traj1_traj2_prod = traj_funcs.traj_inner_prod(self.traj1, self.traj2)

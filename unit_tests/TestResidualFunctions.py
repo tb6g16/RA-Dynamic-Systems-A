@@ -99,15 +99,47 @@ class TestResidualFunctions(unittest.TestCase):
         # self.assertEqual(lr_traj2_sys2, lr_traj2_sys2_true)
 
     def test_global_residual(self):
-        pass
-        # gr_traj1_sys1 = res_funcs.global_residual(self.traj1, self.sys1, self.freq1)
-        # gr_traj2_sys1 = res_funcs.global_residual(self.traj2, self.sys1, self.freq2)
-        # gr_traj1_sys2 = res_funcs.global_residual(self.traj1, self.sys2, self.freq1)
-        # gr_traj2_sys2 = res_funcs.global_residual(self.traj2, self.sys2, self.freq2)
+        # NEED TO DO EQUIVALENT FOR ELLIPSE TRAJECTORY
+
+        # generating random frequency and system parameters
+        freq1 = rand.uniform(-10, 10)
+        # freq2 = rand.uniform(-10, 10)
+        mu1 = rand.uniform(-10, 10)
+        mu2 = rand.uniform(-10, 10)
+        r = rand.uniform(-10, 10)
+
+        # apply parameters
+        self.sys1.parameters['mu'] = mu1
+        self.sys2.parameters['mu'] = mu2
+        self.sys2.parameters['r'] = r
+
+        # calculate global residuals
+        gr_traj1_sys1 = res_funcs.global_residual(self.traj1, self.sys1, freq1)
+        # gr_traj2_sys1 = res_funcs.global_residual(self.traj2, self.sys1, freq2)
+        gr_traj1_sys2 = res_funcs.global_residual(self.traj1, self.sys2, freq1)
+        # gr_traj2_sys2 = res_funcs.global_residual(self.traj2, self.sys2, freq2)
 
         # output is a positive number
+        temp = True
+        if type(gr_traj1_sys1) != np.int64 and type(gr_traj1_sys1) != np.float64:
+            temp = False
+        # if type(gr_traj2_sys1) != np.int64 and type(gr_traj2_sys1) != np.float64:
+        #     temp = False
+        if type(gr_traj1_sys2) != np.int64 and type(gr_traj1_sys2) != np.float64:
+            temp = False
+        # if type(gr_traj2_sys2) != np.int64 and type(gr_traj2_sys2) != np.float64:
+        #     temp = False
+        self.assertTrue(temp) 
 
         # correct values
+        gr_traj1_sys1_true = ((5*(mu1**2))/32) + (((freq1 - 1)**2)/2)
+        # gr_traj2_sys1_true = 1  PLACEHOLDER FOR FUNCTION
+        gr_traj1_sys2_true = (1/2)*((1 - freq1)**2 + ((mu2**2)*(((r**2) - 1)**2)))
+        # gr_traj2_sys2_true = 1 PLACEHOLDER FOR FUNCTION
+        self.assertAlmostEqual(gr_traj1_sys1, gr_traj1_sys1_true, places = 6)
+        # self.assertAlmostEqual(gr_traj2_sys1, gr_traj2_sys1_true, places = 6)
+        self.assertAlmostEqual(gr_traj1_sys2, gr_traj1_sys2_true, places = 6)
+        # self.assertAlmostEqual(gr_traj2_sys2, gr_traj2_sys2_true, places = 6)
 
     def test_global_residual_grad(self):
         pass
