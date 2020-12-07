@@ -98,18 +98,18 @@ def global_residual_grad(traj, sys, freq):
     jacob_func = traj_funcs.jacob_init(traj, sys)
 
     # take norm of trajectory
-    traj_norm = traj_funcs.traj_inner_prod(traj, traj)**0.5
+    traj_grad_norm_sq = traj_funcs.traj_inner_prod(traj_grad, traj_grad)
 
     # take response of trajectory to dynamical system
     traj_resp = traj_funcs.traj_response(traj, sys.response)
-    
+
     # define integrand trajectory to be integrated
-    int_traj = (2*freq*(traj_norm**2)) - \
-        (2*traj_funcs.traj_inner_prod(traj_resp, traj_grad))
+    int_traj = (freq*traj_grad_norm_sq) - \
+        (traj_funcs.traj_inner_prod(traj_grad, traj_resp))
 
     # calculate and return gradients w.r.t trajectory and frequency respectively
     return (-freq*res_grad) + (jacob_func*local_res), \
-        traj_funcs.average_over_s(int_traj)
+        traj_funcs.average_over_s(int_traj)[0]
 
 # if __name__ == "__main__":
 #     from test_cases import unit_circle as uc

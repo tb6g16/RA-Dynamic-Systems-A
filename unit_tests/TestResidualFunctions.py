@@ -32,7 +32,7 @@ class TestResidualFunctions(unittest.TestCase):
         del self.sys2
 
     def test_local_residual(self):
-        # generating random frequency and system parameters
+        # generating random frequencies and system parameters
         freq1 = rand.uniform(-10, 10)
         freq2 = rand.uniform(-10, 10)
         mu1 = rand.uniform(-10, 10)
@@ -101,7 +101,7 @@ class TestResidualFunctions(unittest.TestCase):
         self.assertEqual(lr_traj2_sys2, lr_traj2_sys2_true)
 
     def test_global_residual(self):
-        # generating random frequency and system parameters
+        # generating random frequencies and system parameters
         freq1 = rand.uniform(-10, 10)
         freq2 = rand.uniform(-10, 10)
         mu1 = rand.uniform(-10, 10)
@@ -160,7 +160,89 @@ class TestResidualFunctions(unittest.TestCase):
         # self.assertAlmostEqual(gr_traj2_sys2, gr_traj2_sys2_true, places = 6)
 
     def test_global_residual_grad(self):
-        pass
+        # generating random frequencies and system parameters
+        freq1 = rand.uniform(-10, 10)
+        # freq1 = 1
+        freq2 = rand.uniform(-10, 10)
+        mu1 = rand.uniform(-10, 10)
+        mu2 = rand.uniform(-10, 10)
+        r = rand.uniform(-10, 10)
+
+        # apply parameters
+        self.sys1.parameters['mu'] = mu1
+        self.sys2.parameters['mu'] = mu2
+        self.sys2.parameters['r'] = r
+
+        # calculate global residual gradients
+        gr_grad_traj_traj1_sys1, gr_grad_freq_traj1_sys1 = res_funcs.global_residual_grad(self.traj1, self.sys1, freq1)
+        gr_grad_traj_traj2_sys1, gr_grad_freq_traj2_sys1 = res_funcs.global_residual_grad(self.traj2, self.sys1, freq2)
+        gr_grad_traj_traj1_sys2, gr_grad_freq_traj1_sys2 = res_funcs.global_residual_grad(self.traj1, self.sys2, freq1)
+        gr_grad_traj_traj2_sys2, gr_grad_freq_traj2_sys2 = res_funcs.global_residual_grad(self.traj2, self.sys2, freq2)
+
+        # outputs are numbers
+        temp_traj = True
+        temp_freq = True
+        if gr_grad_traj_traj1_sys1.curve_array.dtype != np.int64 and gr_grad_traj_traj1_sys1.curve_array.dtype != np.float64:
+            temp_traj = False
+        if gr_grad_traj_traj2_sys1.curve_array.dtype != np.int64 and gr_grad_traj_traj2_sys1.curve_array.dtype != np.float64:
+            temp_traj = False
+        if gr_grad_traj_traj1_sys2.curve_array.dtype != np.int64 and gr_grad_traj_traj1_sys2.curve_array.dtype != np.float64:
+            temp_traj = False
+        if gr_grad_traj_traj2_sys2.curve_array.dtype != np.int64 and gr_grad_traj_traj2_sys2.curve_array.dtype != np.float64:
+            temp_traj = False
+        if type(gr_grad_freq_traj1_sys1) != np.int64 != type(gr_grad_freq_traj1_sys1) != np.float64:
+            temp_freq = False
+        if type(gr_grad_freq_traj2_sys1) != np.int64 != type(gr_grad_freq_traj2_sys1) != np.float64:
+            temp_freq = False
+        if type(gr_grad_freq_traj1_sys2) != np.int64 != type(gr_grad_freq_traj1_sys2) != np.float64:
+            temp_freq = False
+        if type(gr_grad_freq_traj2_sys2) != np.int64 != type(gr_grad_freq_traj2_sys2) != np.float64:
+            temp_freq = False
+        self.assertTrue(temp_traj)
+        self.assertTrue(temp_freq)
+
+        # correct values (compared with FD approximation)
+        gr_grad_traj_traj1_sys1_FD, gr_grad_freq_traj1_sys1_FD = self.gen_gr_grad_FD(self.traj1, self.sys1, freq1)
+        gr_grad_traj_traj2_sys1_FD, gr_grad_freq_traj2_sys1_FD = self.gen_gr_grad_FD(self.traj2, self.sys1, freq2)
+        gr_grad_traj_traj1_sys2_FD, gr_grad_freq_traj1_sys2_FD = self.gen_gr_grad_FD(self.traj1, self.sys2, freq1)
+        gr_grad_traj_traj2_sys2_FD, gr_grad_freq_traj2_sys2_FD = self.gen_gr_grad_FD(self.traj2, self.sys2, freq2)
+        # self.assertEqual(gr_grad_traj_traj1_sys1, gr_grad_traj_traj1_sys1_FD)
+        # self.assertEqual(gr_grad_traj_traj2_sys1, gr_grad_traj_traj2_sys1_FD)
+        # self.assertEqual(gr_grad_traj_traj1_sys2, gr_grad_traj_traj1_sys2_FD)
+        # self.assertEqual(gr_grad_traj_traj2_sys2, gr_grad_traj_traj2_sys2_FD)
+        self.assertAlmostEqual(gr_grad_freq_traj1_sys1, gr_grad_freq_traj1_sys1_FD, places = 6)
+        self.assertAlmostEqual(gr_grad_freq_traj2_sys1, gr_grad_freq_traj2_sys1_FD, places = 6)
+        self.assertAlmostEqual(gr_grad_freq_traj1_sys2, gr_grad_freq_traj1_sys2_FD, places = 6)
+        self.assertAlmostEqual(gr_grad_freq_traj2_sys2, gr_grad_freq_traj2_sys2_FD, places = 6)
+
+    @staticmethod
+    def gen_gr_grad_FD(traj, sys, freq, step = 1e-4):
+        """
+            This function uses finite differencing to compute the gradients of
+            the global residual for all the DoFs (the discrete time coordinated
+            and the frequency).
+        """
+        # initialise arrays
+        gr_grad_FD_traj = np.zeros(np.shape(traj.curve_array))
+
+        # loop over trajectory DoFs and use CD scheme
+        for i in range(np.shape(traj.curve_array)[0]):
+            for j in range(np.shape(traj.curve_array)[1]):
+                traj_for = traj
+                traj_for.curve_array[i, j] = traj.curve_array[i, j] + step
+                gr_traj_for = res_funcs.global_residual(traj_for, sys, freq)
+                traj_back = traj
+                traj_back.curve_array[i, j] = traj.curve_array[i, j] - step
+                gr_traj_back = res_funcs.global_residual(traj_back, sys, freq)
+                gr_grad_FD_traj[i, j] = (gr_traj_for - gr_traj_back)/(2*step)
+        gr_grad_FD_traj = Trajectory(gr_grad_FD_traj)
+
+        # calculate gradient w.r.t frequency
+        gr_freq_for = res_funcs.global_residual(traj, sys, freq + step)
+        gr_freq_back = res_funcs.global_residual(traj, sys, freq - step)
+        gr_grad_FD_freq = (gr_freq_for - gr_freq_back)/(2*step)
+
+        return gr_grad_FD_traj, gr_grad_FD_freq
 
 
 if __name__ == "__main__":
