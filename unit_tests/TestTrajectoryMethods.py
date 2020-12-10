@@ -17,45 +17,109 @@ from test_cases import viswanath as vis
 class TestTrajectoryMethods(unittest.TestCase):
     
     def setUp(self):
-        pass
+        self.traj1 = Trajectory(uc.x, disc = 64)
+        self.freq1 = 1
+        self.traj2 = Trajectory(elps.x, disc = 64)
+        self.freq2 = 1
+        self.sys1 = System(vpd)
+        self.sys2 = System(vis)
 
     def tearDown(self):
-        pass
+        del self.traj1
+        del self.traj2
+        del self.sys1
+        del self.sys2
 
-    def test_func2array(self):
-        pass
-        # output correct size
-        # self.assertEqual(self.traj1.curve_array.shape, (2, 64))
-        # self.assertEqual(self.traj2.curve_array.shape, (2, 64))
+    def test_mul_float(self):
+        # random numbers to multiply by
+        rand1 = rand.uniform(-10, 10)
+        rand2 = rand.uniform(-10, 10)
 
-        # # outputs are numbers
-        # self.assertTrue(self.traj1.curve_array.dtype == np.int64 or \
-        #     self.traj1.curve_array.dtype == np.float64)
-        # self.assertTrue(self.traj2.curve_array.dtype == np.int64 or \
-        #     self.traj2.curve_array.dtype == np.float64)
+        # perform multiplication via magic method
+        float_mul1 = rand1*self.traj1
+        float_mul2 = rand2*self.traj2
 
-        # # correct values
-        # rindex1 = int(rand.random()*np.shape(self.traj1.curve_array)[1])
-        # rindex2 = int(rand.random()*np.shape(self.traj2.curve_array)[1])
-        # rs1 = ((2*np.pi)/(np.shape(self.traj1.curve_array)[1]))*rindex1
-        # rs2 = ((2*np.pi)/(np.shape(self.traj2.curve_array)[1]))*rindex2
-        # traj1_val = self.traj1.curve_array[:, rindex1]
-        # traj2_val = self.traj2.curve_array[:, rindex2]
-        # traj1_true = uc.x(rs1)
-        # traj2_true = elps.x(rs2)
-        # self.assertTrue(np.allclose(traj1_val, traj1_true))
-        # self.assertTrue(np.allclose(traj2_val, traj2_true))
+        # correct elements
+        for i in range(np.shape(self.traj1.curve_array)[0]):
+            for j in range(np.shape(self.traj1.curve_array)[1]):
+                self.assertEqual(float_mul1.curve_array[i, j], self.traj1.curve_array[i, j]*rand1)
+                self.assertEqual(float_mul2.curve_array[i, j], self.traj2.curve_array[i, j]*rand2)
+        
+        # check commutativity (__rmul__)
+        self.assertEqual(float_mul1, self.traj1*rand1)
+        self.assertEqual(float_mul2, self.traj2*rand2)
 
-    def test_summing(self):
-        # test both __add__ and __sub__
-        pass
+    def test_matmul_array(self):
+        # random matrices to multiple by
+        rand1 = np.random.rand(2, 2)
+        rand2 = np.random.rand(2, 2)
 
-    def test_mul(self):
-        # test both __mul__ and __rmul__
-        pass
+        # perform multiplication via magic method
+        mat_mul1 = rand1 @ self.traj1
+        mat_mul2 = rand2 @ self.traj2
 
-    def test_pow(self):
-        pass
+        # correct elements
+        for i in range(np.shape(self.traj1.curve_array)[1]):
+            self.assertTrue(np.allclose(mat_mul1.curve_array[:, i], rand1 @ self.traj1.curve_array[:, i], rtol = 1e-12))
+            self.assertTrue(np.allclose(mat_mul2.curve_array[:, i], rand2 @ self.traj2.curve_array[:, i], rtol = 1e-12))
+
+        # check commutativity (__rmatmul__)
+        self.assertEqual(mat_mul1, self.traj1 @ rand1)
+        self.assertEqual(mat_mul2, self.traj2 @ rand2)
+
+    def test_matmul_func(self):
+        # initialise jacobian matrices
+        mat_func_t1s1 = traj_funcs.jacob_init(self.traj1, self.sys1)
+        mat_func_t2s1 = traj_funcs.jacob_init(self.traj2, self.sys1)
+        mat_func_t1s2 = traj_funcs.jacob_init(self.traj1, self.sys2)
+        mat_func_t2s2 = traj_funcs.jacob_init(self.traj2, self.sys2)
+
+        # random index
+        rind_t1s1 = int(rand.uniform(0, 64))
+        rind_t2s1 = int(rand.uniform(0, 64))
+        rind_t1s2 = int(rand.uniform(0, 64))
+        rind_t2s2 = int(rand.uniform(0, 64))
+
+        # calculate product via magin method
+        matmul_t1s1 = mat_func_t1s1 @ self.traj1
+        matmul_t2s1 = mat_func_t2s1 @ self.traj2
+        matmul_t1s2 = mat_func_t1s2 @ self.traj1
+        matmul_t2s2 = mat_func_t2s2 @ self.traj2
+
+        # outputs are trajectories
+        self.assertIsInstance(matmul_t1s1, Trajectory)
+        self.assertIsInstance(matmul_t2s1, Trajectory)
+        self.assertIsInstance(matmul_t1s2, Trajectory)
+        self.assertIsInstance(matmul_t2s2, Trajectory)
+
+        # outputs are correct size
+        self.assertEqual(np.shape(matmul_t1s1.curve_array), np.shape(self.traj1.curve_array))
+        self.assertEqual(np.shape(matmul_t2s1.curve_array), np.shape(self.traj2.curve_array))
+        self.assertEqual(np.shape(matmul_t1s2.curve_array), np.shape(self.traj1.curve_array))
+        self.assertEqual(np.shape(matmul_t2s2.curve_array), np.shape(self.traj2.curve_array))
+
+        # outputs are real numbers
+        temp = True
+        if matmul_t1s1.curve_array.dtype != np.int64 and matmul_t1s1.curve_array.dtype != np.float64:
+            temp = False
+        if matmul_t2s1.curve_array.dtype != np.int64 and matmul_t2s1.curve_array.dtype != np.float64:
+            temp = False
+        if matmul_t1s2.curve_array.dtype != np.int64 and matmul_t1s2.curve_array.dtype != np.float64:
+            temp = False
+        if matmul_t2s2.curve_array.dtype != np.int64 and matmul_t2s2.curve_array.dtype != np.float64:
+            temp = False
+        self.assertTrue(temp)
+
+        # correct values at random vector
+        self.assertTrue(np.allclose(matmul_t1s1.curve_array[:, rind_t1s1], mat_func_t1s1(rind_t1s1) @ self.traj1.curve_array[:, rind_t1s1]))
+        self.assertTrue(np.allclose(matmul_t2s1.curve_array[:, rind_t2s1], mat_func_t2s1(rind_t2s1) @ self.traj2.curve_array[:, rind_t2s1]))
+        self.assertTrue(np.allclose(matmul_t1s2.curve_array[:, rind_t1s2], mat_func_t1s2(rind_t1s2) @ self.traj1.curve_array[:, rind_t1s2]))
+        self.assertTrue(np.allclose(matmul_t2s2.curve_array[:, rind_t2s2], mat_func_t2s2(rind_t2s2) @ self.traj2.curve_array[:, rind_t2s2]))
 
     def test_eq(self):
-        pass
+        self.assertTrue(self.traj1 + self.traj1 == 2*self.traj1)
+        self.assertTrue(self.traj2 + self.traj2 == 2*self.traj2)
+
+
+if __name__ == "__main__":
+    unittest.main()

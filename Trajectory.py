@@ -39,6 +39,7 @@ class Trajectory:
     """
 
     __slots__ = ['curve_array', 'curve_func']
+    __array_priority__ = 1e16
 
     def __init__(self, curve, disc = 64):
         """
@@ -100,40 +101,29 @@ class Trajectory:
 
     def __mul__(self, factor):
         # scalar multiplication
-        if type(factor) == float or type(factor) == int:
+        if type(factor) == float or type(factor) == int or \
+            type(factor) == np.float64 or type(factor) == np.int64:
             return Trajectory(factor*self.curve_array)
-        # variable matrix multiplication
-        elif hasattr(factor, '__call__'):
-            s_disc = np.shape(self.curve_array)
-            new_traj = np.zeros(s_disc)
-            for i in range(s_disc[1]):
-                # s = self.gen_s(i)
-                new_traj[:, i] = np.matmul(factor(i), self.curve_array[:, i])
-            return Trajectory(new_traj)
-        # constant matrix multiplication
-        elif type(factor) == np.ndarray:
-            return Trajectory(np.matmul(factor, self.curve_array))
         else:
             raise TypeError("Inputs are not of the correct type!")
 
     def __rmul__(self, factor):
-        # scalar multiplication
-        # if type(factor) == float or type(factor) == int:
-        #     return Trajectory(factor*self.curve_array)
-        # # variable matrix multiplication
-        # elif hasattr(factor, '__call__'):
-        #     s_disc = np.shape(self.curve_array)
-        #     new_traj = np.zeros(s_disc)
-        #     for i in range(s_disc[1]):
-        #         # s = self.gen_s(i)
-        #         new_traj[:, i] = np.matmul(factor(i), self.curve_array[:, i])
-        #     return Trajectory(new_traj)
-        # # constant matrix multiplication
-        # elif type(factor) == np.ndarray:
-        #     return Trajectory(np.matmul(factor, self.curve_array))
-        # else:
-        #     raise TypeError("Inputs are not of the correct type!")
         return self.__mul__(factor)
+    
+    def __matmul__(self, factor):
+        if type(factor) == np.ndarray:
+            return Trajectory(np.matmul(factor, self.curve_array))
+        elif hasattr(factor, '__call__'):
+            s_disc = np.shape(self.curve_array)
+            new_traj = np.zeros(s_disc)
+            for i in range(s_disc[1]):
+                new_traj[:, i] = np.matmul(factor(i), self.curve_array[:, i])
+            return Trajectory(new_traj)
+        else:
+            raise TypeError("Inputs are not of the correct type!")
+
+    def __rmatmul__(self, factor):
+        return self.__matmul__(factor)
 
     def __pow__(self, exponent):
         # perform element-by-element exponentiation
