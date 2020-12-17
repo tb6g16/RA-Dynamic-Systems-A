@@ -130,7 +130,7 @@ def traj_response(traj, func):
     
     return Trajectory(response_array)
 
-def jacob_init(traj, sys):
+def jacob_init(traj, sys, if_transp = False):
     """
         This function initialises a jacobian function that returns the jacobian
         matrix for the given system at each location along the domain of the
@@ -179,5 +179,8 @@ def jacob_init(traj, sys):
         state = traj.curve_array[:, i]
 
         # the jocobian for that state
-        return sys.jacobian(state)
+        if if_transp == True:
+            return np.transpose(sys.jacobian(state))
+        elif if_transp == False:
+            return sys.jacobian(state)
     return jacobian
