@@ -15,6 +15,8 @@ from test_cases import ellipse as elps
 from test_cases import van_der_pol as vpd
 from test_cases import viswanath as vis
 
+import matplotlib.pyplot as plt
+
 class TestResidualFunctions(unittest.TestCase):
     
     def setUp(self):
@@ -161,12 +163,16 @@ class TestResidualFunctions(unittest.TestCase):
 
     def test_global_residual_grad(self):
         # generating random frequencies and system parameters
-        freq1 = rand.uniform(-10, 10)
-        # freq1 = 1
+        # freq1 = rand.uniform(-10, 10)
+        freq1 = 1
         freq2 = rand.uniform(-10, 10)
+        # freq2 = 1
         mu1 = rand.uniform(-10, 10)
-        mu2 = rand.uniform(-10, 10)
-        r = rand.uniform(-10, 10)
+        # mu1 = 0
+        # mu2 = rand.uniform(-10, 10)
+        mu2 = 1
+        # r = rand.uniform(-10, 10)
+        r = 2
 
         # apply parameters
         self.sys1.parameters['mu'] = mu1
@@ -206,17 +212,33 @@ class TestResidualFunctions(unittest.TestCase):
         gr_grad_traj_traj2_sys1_FD, gr_grad_freq_traj2_sys1_FD = self.gen_gr_grad_FD(self.traj2, self.sys1, freq2)
         gr_grad_traj_traj1_sys2_FD, gr_grad_freq_traj1_sys2_FD = self.gen_gr_grad_FD(self.traj1, self.sys2, freq1)
         gr_grad_traj_traj2_sys2_FD, gr_grad_freq_traj2_sys2_FD = self.gen_gr_grad_FD(self.traj2, self.sys2, freq2)
-        # self.assertEqual(gr_grad_traj_traj1_sys1, gr_grad_traj_traj1_sys1_FD)
-        # self.assertEqual(gr_grad_traj_traj2_sys1, gr_grad_traj_traj2_sys1_FD)
-        # self.assertEqual(gr_grad_traj_traj1_sys2, gr_grad_traj_traj1_sys2_FD)
-        # self.assertEqual(gr_grad_traj_traj2_sys2, gr_grad_traj_traj2_sys2_FD)
+
+        # fig, (ax1, ax2, ax3) = plt.subplots(figsize = (12, 5), nrows = 3)
+        # pos1 = ax1.matshow(gr_grad_traj_traj2_sys2.curve_array)
+        # pos2 = ax2.matshow(gr_grad_traj_traj2_sys2_FD.curve_array)
+        # pos3 = ax3.matshow(abs(gr_grad_traj_traj2_sys2.curve_array - gr_grad_traj_traj2_sys2_FD.curve_array))
+        # fig.colorbar(pos1, ax = ax1)
+        # fig.colorbar(pos2, ax = ax2)
+        # fig.colorbar(pos3, ax = ax3)
+        # plt.show()
+
+        # LARGEST ERRORS AT POINTS OF EXTREMA IN MATRIX ALONG TIME DIMENSION
+
+        # Passes consistently with rtol, atol = 1e-2
+        self.assertEqual(gr_grad_traj_traj1_sys1, gr_grad_traj_traj1_sys1_FD)
+        # Mostly passes with rtol, atol = 1e-2
+        self.assertEqual(gr_grad_traj_traj2_sys1, gr_grad_traj_traj2_sys1_FD)
+        # Passes consistently with rtol, atol = 1e-3
+        self.assertEqual(gr_grad_traj_traj1_sys2, gr_grad_traj_traj1_sys2_FD)
+        # Passes consistently with rtol, atol = 1e-2
+        self.assertEqual(gr_grad_traj_traj2_sys2, gr_grad_traj_traj2_sys2_FD)
         self.assertAlmostEqual(gr_grad_freq_traj1_sys1, gr_grad_freq_traj1_sys1_FD, places = 6)
         self.assertAlmostEqual(gr_grad_freq_traj2_sys1, gr_grad_freq_traj2_sys1_FD, places = 6)
         self.assertAlmostEqual(gr_grad_freq_traj1_sys2, gr_grad_freq_traj1_sys2_FD, places = 6)
         self.assertAlmostEqual(gr_grad_freq_traj2_sys2, gr_grad_freq_traj2_sys2_FD, places = 6)
 
     @staticmethod
-    def gen_gr_grad_FD(traj, sys, freq, step = 1e-4):
+    def gen_gr_grad_FD(traj, sys, freq, step = 1e-6):
         """
             This function uses finite differencing to compute the gradients of
             the global residual for all the DoFs (the discrete time coordinated

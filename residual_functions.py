@@ -95,7 +95,7 @@ def global_residual_grad(traj, sys, freq):
     res_grad = traj_funcs.traj_grad(local_res)
 
     # initialise jacobian function
-    jacob_func = traj_funcs.jacob_init(traj, sys)
+    jacob_func = traj_funcs.jacob_init(traj, sys, if_transp = True)
 
     # take norm of trajectory
     traj_grad_norm_sq = traj_funcs.traj_inner_prod(traj_grad, traj_grad)
@@ -108,25 +108,5 @@ def global_residual_grad(traj, sys, freq):
         (traj_funcs.traj_inner_prod(traj_grad, traj_resp))
 
     # calculate and return gradients w.r.t trajectory and frequency respectively
-    return (-freq*res_grad) + (jacob_func*local_res), \
+    return ((-freq*res_grad) - (jacob_func @ local_res))*(1/(40*np.pi)), \
         traj_funcs.average_over_s(int_traj)[0]
-
-# if __name__ == "__main__":
-#     from test_cases import unit_circle as uc
-#     from test_cases import van_der_pol as vpd
-#     from test_cases import viswanath as vis
-
-    # traj = Trajectory(uc.x)
-    # sys = System(vpd)
-    # sys.parameters['mu'] = 1
-    # freq = 1
-
-    # print(global_residual(traj, sys, freq))
-
-    # traj = Trajectory(uc.x)
-    # sys = System(vis)
-    # sys.parameters['mu'] = 1
-    # sys.parameters['r'] = 2
-    # freq = 1
-
-    # print(global_residual(traj, sys, freq))
