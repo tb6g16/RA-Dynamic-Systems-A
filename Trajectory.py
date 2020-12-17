@@ -129,11 +129,11 @@ class Trajectory:
         # perform element-by-element exponentiation
         return Trajectory(self.curve_array ** exponent)
 
-    def __eq__(self, other_traj, rtol = 1e-6):
+    def __eq__(self, other_traj, rtol = 1e-2, atol = 1e-2):
         if not isinstance(other_traj, Trajectory):
             raise TypeError("Inputs are not of the correct type!")
         return np.allclose(self.curve_array, other_traj.curve_array, \
-            rtol = rtol)
+            rtol = rtol, atol = atol)
 
     # def plot(self, gradient = False, gradient_density = None):
     #     """
