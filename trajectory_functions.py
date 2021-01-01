@@ -56,8 +56,7 @@ def average_over_s(traj):
             over s for each of its dimensions
     """
     # make trajectory truly periodic
-    integ_traj = np.concatenate((traj.curve_array, traj.curve_array[:, 0:1]), \
-        axis = 1)
+    integ_traj = np.concatenate((traj.curve_array, traj[:, 0:1]), axis = 1)
     
     # initialise vector to hold integration results
     traj_disc = np.linspace(0, 2*np.pi, np.shape(integ_traj)[1])
@@ -95,8 +94,7 @@ def traj_inner_prod(traj1, traj2):
 
     # calculate inner product at each location s
     for i in range(disc_size):
-        product_array[0, i] = np.dot(traj1.curve_array[:, i], \
-            traj2.curve_array[:, i])
+        product_array[0, i] = np.dot(traj1[:, i], traj2[:, i])
     
     return Trajectory(product_array)
 
@@ -126,7 +124,7 @@ def traj_response(traj, func):
     
     # evaluate response
     for i in range(array_size[1]):
-        response_array[:, i] = func(traj.curve_array[:, i])
+        response_array[:, i] = func(traj[:, i])
     
     return Trajectory(response_array)
 
@@ -176,7 +174,7 @@ def jacob_init(traj, sys, if_transp = False):
         i = int(i)
 
         # state at index
-        state = traj.curve_array[:, i]
+        state = traj[:, i]
 
         # the jocobian for that state
         if if_transp == True:

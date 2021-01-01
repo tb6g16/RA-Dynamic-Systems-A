@@ -116,7 +116,7 @@ class Trajectory:
             s_disc = self.shape
             new_traj = np.zeros(s_disc)
             for i in range(s_disc[1]):
-                new_traj[:, i] = np.matmul(factor(i), self.curve_array[:, i])
+                new_traj[:, i] = np.matmul(factor(i), self[:, i])
             return Trajectory(new_traj)
         else:
             raise TypeError("Inputs are not of the correct type!")
@@ -134,6 +134,14 @@ class Trajectory:
         return np.allclose(self.curve_array, other_traj.curve_array, \
             rtol = rtol, atol = atol)
 
+    def __getitem__(self, key):
+        i, j = key
+        return self.curve_array[i, j]
+
+    def __setitem__(self, key, value):
+        i, j = key
+        self.curve_array[i, j] = value
+
     def plot(self, gradient = None):
         """
             This function is a placeholder and will be used for plotting
@@ -145,16 +153,15 @@ class Trajectory:
             # plotting trajectory
             fig = plt.figure()
             ax = fig.gca()
-            ax.plot(np.append(self.curve_array[0], self.curve_array[0, 0]), \
-                np.append(self.curve_array[1], self.curve_array[1, 0]))
+            ax.plot(np.append(self.curve_array[0], self[0, 0]), \
+                np.append(self.curve_array[1], self[1, 0]))
             ax.set_aspect('equal')
 
             # add gradient
             if gradient != None:
                 grad = traj_funcs.traj_grad(self)
                 for i in range(0, self.shape[1], int(1/gradient)):
-                    ax.quiver(self.curve_array[0, i], self.curve_array[1, i], \
-                    grad.curve_array[0, i], grad.curve_array[1, i])
+                    ax.quiver(self[0, i], self[1, i], grad[0, i], grad[1, i])
             plt.show()
         else:
             raise ValueError("Bruh!")

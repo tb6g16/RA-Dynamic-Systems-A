@@ -40,10 +40,10 @@ class TestTrajectoryMethods(unittest.TestCase):
         float_mul2 = rand2*self.traj2
 
         # correct elements
-        for i in range(np.shape(self.traj1.curve_array)[0]):
-            for j in range(np.shape(self.traj1.curve_array)[1]):
-                self.assertEqual(float_mul1.curve_array[i, j], self.traj1.curve_array[i, j]*rand1)
-                self.assertEqual(float_mul2.curve_array[i, j], self.traj2.curve_array[i, j]*rand2)
+        for i in range(self.traj1.shape[0]):
+            for j in range(self.traj1.shape[1]):
+                self.assertEqual(float_mul1[i, j], self.traj1[i, j]*rand1)
+                self.assertEqual(float_mul2[i, j], self.traj2[i, j]*rand2)
         
         # check commutativity (__rmul__)
         self.assertEqual(float_mul1, self.traj1*rand1)
@@ -59,9 +59,9 @@ class TestTrajectoryMethods(unittest.TestCase):
         mat_mul2 = rand2 @ self.traj2
 
         # correct elements
-        for i in range(np.shape(self.traj1.curve_array)[1]):
-            self.assertTrue(np.allclose(mat_mul1.curve_array[:, i], rand1 @ self.traj1.curve_array[:, i], rtol = 1e-12))
-            self.assertTrue(np.allclose(mat_mul2.curve_array[:, i], rand2 @ self.traj2.curve_array[:, i], rtol = 1e-12))
+        for i in range(self.traj1.shape[1]):
+            self.assertTrue(np.allclose(mat_mul1[:, i], rand1 @ self.traj1[:, i], rtol = 1e-12))
+            self.assertTrue(np.allclose(mat_mul2[:, i], rand2 @ self.traj2[:, i], rtol = 1e-12))
 
         # check commutativity (__rmatmul__)
         self.assertEqual(mat_mul1, self.traj1 @ rand1)
@@ -93,10 +93,10 @@ class TestTrajectoryMethods(unittest.TestCase):
         self.assertIsInstance(matmul_t2s2, Trajectory)
 
         # outputs are correct size
-        self.assertEqual(np.shape(matmul_t1s1.curve_array), np.shape(self.traj1.curve_array))
-        self.assertEqual(np.shape(matmul_t2s1.curve_array), np.shape(self.traj2.curve_array))
-        self.assertEqual(np.shape(matmul_t1s2.curve_array), np.shape(self.traj1.curve_array))
-        self.assertEqual(np.shape(matmul_t2s2.curve_array), np.shape(self.traj2.curve_array))
+        self.assertEqual(matmul_t1s1.shape, self.traj1.shape)
+        self.assertEqual(matmul_t2s1.shape, self.traj2.shape)
+        self.assertEqual(matmul_t1s2.shape, self.traj1.shape)
+        self.assertEqual(matmul_t2s2.shape, self.traj2.shape)
 
         # outputs are real numbers
         temp = True
@@ -111,10 +111,10 @@ class TestTrajectoryMethods(unittest.TestCase):
         self.assertTrue(temp)
 
         # correct values at random vector
-        self.assertTrue(np.allclose(matmul_t1s1.curve_array[:, rind_t1s1], mat_func_t1s1(rind_t1s1) @ self.traj1.curve_array[:, rind_t1s1]))
-        self.assertTrue(np.allclose(matmul_t2s1.curve_array[:, rind_t2s1], mat_func_t2s1(rind_t2s1) @ self.traj2.curve_array[:, rind_t2s1]))
-        self.assertTrue(np.allclose(matmul_t1s2.curve_array[:, rind_t1s2], mat_func_t1s2(rind_t1s2) @ self.traj1.curve_array[:, rind_t1s2]))
-        self.assertTrue(np.allclose(matmul_t2s2.curve_array[:, rind_t2s2], mat_func_t2s2(rind_t2s2) @ self.traj2.curve_array[:, rind_t2s2]))
+        self.assertTrue(np.allclose(matmul_t1s1[:, rind_t1s1], mat_func_t1s1(rind_t1s1) @ self.traj1[:, rind_t1s1]))
+        self.assertTrue(np.allclose(matmul_t2s1[:, rind_t2s1], mat_func_t2s1(rind_t2s1) @ self.traj2[:, rind_t2s1]))
+        self.assertTrue(np.allclose(matmul_t1s2[:, rind_t1s2], mat_func_t1s2(rind_t1s2) @ self.traj1[:, rind_t1s2]))
+        self.assertTrue(np.allclose(matmul_t2s2[:, rind_t2s2], mat_func_t2s2(rind_t2s2) @ self.traj2[:, rind_t2s2]))
 
     def test_eq(self):
         self.assertTrue(self.traj1 + self.traj1 == 2*self.traj1)

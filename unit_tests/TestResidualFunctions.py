@@ -251,10 +251,10 @@ class TestResidualFunctions(unittest.TestCase):
         for i in range(traj.shape[0]):
             for j in range(traj.shape[1]):
                 traj_for = traj
-                traj_for.curve_array[i, j] = traj.curve_array[i, j] + step
+                traj_for[i, j] = traj[i, j] + step
                 gr_traj_for = res_funcs.global_residual(traj_for, sys, freq)
                 traj_back = traj
-                traj_back.curve_array[i, j] = traj.curve_array[i, j] - step
+                traj_back[i, j] = traj[i, j] - step
                 gr_traj_back = res_funcs.global_residual(traj_back, sys, freq)
                 gr_grad_FD_traj[i, j] = (gr_traj_for - gr_traj_back)/(2*step)
         gr_grad_FD_traj = Trajectory(gr_grad_FD_traj)
