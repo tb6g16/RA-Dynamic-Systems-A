@@ -10,9 +10,6 @@ from mpl_toolkits.mplot3d import Axes3D
 
 from System import System
 
-# GRADIENT ATTRIBUTE REQUIRES GETTER AND SETTER METHODS OR JUST CALCULATE AT
-# INIT
-
 class Trajectory:
     """
         A trajectory in some finite-dimensional vector space parameterised with
@@ -135,6 +132,32 @@ class Trajectory:
         return np.allclose(self.curve_array, other_traj.curve_array, \
             rtol = rtol, atol = atol)
 
+    def plot(self, gradient = None):
+        """
+            This function is a placeholder and will be used for plotting
+            purposes.
+        """
+        import trajectory_functions as traj_funcs
+        
+        if np.shape(self.curve_array)[0] == 2:
+            # plotting trajectory
+            fig = plt.figure()
+            ax = fig.gca()
+            ax.plot(np.append(self.curve_array[0], self.curve_array[0, 0]), \
+                np.append(self.curve_array[1], self.curve_array[1, 0]))
+            ax.set_aspect('equal')
+
+            # add gradient
+            if gradient != None:
+                grad = traj_funcs.traj_grad(self)
+                for i in range(0, np.shape(self.curve_array)[1], \
+                int(1/gradient)):
+                    ax.quiver(self.curve_array[0, i], self.curve_array[1, i], \
+                    grad.curve_array[0, i], grad.curve_array[1, i])
+            plt.show()
+        else:
+            raise ValueError("Bruh!")
+
     # def plot(self, gradient = False, gradient_density = None):
     #     """
     #         Plot 1D, 2D, or 3D trajectories or gradients.
@@ -149,8 +172,8 @@ class Trajectory:
     #     """
     #     # check if gradient density is between o and 1
     #     if gradient_density < 0 or gradient_density > 1:
-    #         raise ValueError("gradient_density should be between 0 and 1 \
-    #         inclusive!")
+            # raise ValueError("gradient_density should be between 0 and 1 \
+            # inclusive!")
     #     # check if gradient attribute has value None
     #     # if gradient == True and self.grad is None:
     #     #     self.gradient()
@@ -164,19 +187,6 @@ class Trajectory:
 
     #         # NEEDS TO IMPLEMENT HERE ON X-AXIS
 
-    #         plt.show()
-    #     elif np.shape(self.curve_array)[0] == 2:
-    #         # plot in 2D vector space
-    #         fig = plt.figure()
-    #         ax = fig.gca()
-    #         ax.plot(np.append(self.curve_array[0], self.curve_array[0, 0]), \
-    #             np.append(self.curve_array[1], self.curve_array[1, 0]))
-    #         ax.set_aspect('equal')
-    #         if gradient:
-    #             for i in range(0, np.shape(self.curve_array)[1], \
-    #             int(1/gradient_density)):
-    #                 ax.quiver(self.curve_array[0, i], self.curve_array[1, i], \
-    #                 self.grad.curve_array[0, i], self.grad.curve_array[1, i])
     #         plt.show()
     #     elif np.shape(self.curve_array)[0] == 3:
     #         # plot in 3D vector space
@@ -200,8 +210,8 @@ if __name__ == '__main__':
 
     unit_circle3 = np.pi*unit_circle1 + unit_circle2
 
-    # unit_circle1.plot(gradient = True, gradient_density = 32/256)
-    # unit_circle3.plot(gradient = True, gradient_density = 32/256)
+    unit_circle1.plot(gradient = 16/64)
+    unit_circle3.plot(gradient = 16/64)
     
     ellipse = Trajectory(elps.x)
-    # ellipse.plot(gradient = True, gradient_density = 32/256)
+    ellipse.plot(gradient = 16/64)
