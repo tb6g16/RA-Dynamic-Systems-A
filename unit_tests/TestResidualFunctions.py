@@ -59,10 +59,10 @@ class TestResidualFunctions(unittest.TestCase):
         self.assertIsInstance(lr_traj2_sys2, Trajectory)
 
         # output is of correct shape
-        self.assertEqual(lr_traj1_sys1.curve_array.shape, self.traj1.curve_array.shape)
-        self.assertEqual(lr_traj2_sys1.curve_array.shape, self.traj2.curve_array.shape)
-        self.assertEqual(lr_traj1_sys2.curve_array.shape, self.traj1.curve_array.shape)
-        self.assertEqual(lr_traj2_sys2.curve_array.shape, self.traj2.curve_array.shape)
+        self.assertEqual(lr_traj1_sys1.shape, self.traj1.shape)
+        self.assertEqual(lr_traj2_sys1.shape, self.traj2.shape)
+        self.assertEqual(lr_traj1_sys2.shape, self.traj1.shape)
+        self.assertEqual(lr_traj2_sys2.shape, self.traj2.shape)
 
         # outputs are numbers
         temp = True
@@ -77,20 +77,20 @@ class TestResidualFunctions(unittest.TestCase):
         self.assertTrue(temp)
 
         # correct values
-        lr_traj1_sys1_true = np.zeros(self.traj1.curve_array.shape)
-        lr_traj2_sys1_true = np.zeros(self.traj2.curve_array.shape)
-        lr_traj1_sys2_true = np.zeros(self.traj1.curve_array.shape)
-        lr_traj2_sys2_true = np.zeros(self.traj2.curve_array.shape)
-        for i in range(np.shape(self.traj1.curve_array)[1]):
-            s = ((2*np.pi)/np.shape(self.traj1.curve_array)[1])*i
+        lr_traj1_sys1_true = np.zeros(self.traj1.shape)
+        lr_traj2_sys1_true = np.zeros(self.traj2.shape)
+        lr_traj1_sys2_true = np.zeros(self.traj1.shape)
+        lr_traj2_sys2_true = np.zeros(self.traj2.shape)
+        for i in range(self.traj1.shape[1]):
+            s = ((2*np.pi)/self.traj1.shape[1])*i
             lr_traj1_sys1_true[0, i] = (1 - freq1)*np.sin(s)
             lr_traj1_sys1_true[1, i] = (mu1*(1 - (np.cos(s)**2))*np.sin(s)) + ((1 - freq1)*np.cos(s))
             lr_traj1_sys2_true[0, i] = ((1 - freq1)*np.sin(s)) - (mu2*np.cos(s)*((r**2) - 1))
             lr_traj1_sys2_true[1, i] = ((1 - freq1)*np.cos(s)) + (mu2*np.sin(s)*((r**2) - 1))
         lr_traj1_sys1_true = Trajectory(lr_traj1_sys1_true)
         lr_traj1_sys2_true = Trajectory(lr_traj1_sys2_true)
-        for i in range(np.shape(self.traj2.curve_array)[1]):
-            s = ((2*np.pi)/np.shape(self.traj1.curve_array)[1])*i
+        for i in range(self.traj2.shape[1]):
+            s = ((2*np.pi)/self.traj1.shape[1])*i
             lr_traj2_sys1_true[0, i] = (1 - (2*freq2))*np.sin(s)
             lr_traj2_sys1_true[1, i] = ((2 - freq2)*np.cos(s)) + (mu1*(1 - (4*(np.cos(s)**2)))*np.sin(s))
             lr_traj2_sys2_true[0, i] = ((1 - (2*freq2))*np.sin(s)) - (2*mu2*np.cos(s)*((r**2) - np.sqrt((4*(np.cos(s)**2)) + (np.sin(s)**2))))
@@ -245,11 +245,11 @@ class TestResidualFunctions(unittest.TestCase):
             and the frequency).
         """
         # initialise arrays
-        gr_grad_FD_traj = np.zeros(np.shape(traj.curve_array))
+        gr_grad_FD_traj = np.zeros(traj.shape)
 
         # loop over trajectory DoFs and use CD scheme
-        for i in range(np.shape(traj.curve_array)[0]):
-            for j in range(np.shape(traj.curve_array)[1]):
+        for i in range(traj.shape[0]):
+            for j in range(traj.shape[1]):
                 traj_for = traj
                 traj_for.curve_array[i, j] = traj.curve_array[i, j] + step
                 gr_traj_for = res_funcs.global_residual(traj_for, sys, freq)

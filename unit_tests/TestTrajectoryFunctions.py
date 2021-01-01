@@ -48,11 +48,11 @@ class TestTrajectoryFunctions(unittest.TestCase):
         self.assertEqual(traj1_traj2_prod, traj2_traj1_prod)
 
         # inner product equal to norm
-        traj1_norm = np.ones([1, np.shape(self.traj1.curve_array)[1]])
+        traj1_norm = np.ones([1, self.traj1.shape[1]])
         traj1_norm = Trajectory(traj1_norm)
-        traj2_norm = np.zeros([1, np.shape(self.traj2.curve_array)[1]])
-        for i in range(np.shape(self.traj2.curve_array)[1]):
-            s = ((2*np.pi)/np.shape(self.traj2.curve_array)[1])*i
+        traj2_norm = np.zeros([1, self.traj2.shape[1]])
+        for i in range(self.traj2.shape[1]):
+            s = ((2*np.pi)/self.traj2.shape[1])*i
             traj2_norm[0, i] = (4*(np.cos(s)**2)) + (np.sin(s)**2)
         traj2_norm = Trajectory(traj2_norm)
         self.assertEqual(traj1_norm, traj1_traj1_prod)
@@ -60,10 +60,10 @@ class TestTrajectoryFunctions(unittest.TestCase):
 
         # single number at each index
         temp1 = True
-        for i in range(np.shape(traj1_traj2_prod.curve_array)[1]):
+        for i in range(traj1_traj2_prod.shape[1]):
             if traj1_traj2_prod.curve_array[:, i].shape[0] != 1:
                 temp1 = False
-        for i in range(traj2_traj1_prod.curve_array.shape[1]):
+        for i in range(traj2_traj1_prod.shape[1]):
             if traj2_traj1_prod.curve_array[:, i].shape[0] != 1:
                 temp1 = False
         self.assertTrue(temp1)
@@ -80,10 +80,8 @@ class TestTrajectoryFunctions(unittest.TestCase):
 
     def test_gradient(self):
         # same shape as original trajectories
-        self.assertEqual(self.traj1.curve_array.shape, \
-            self.traj1_grad.curve_array.shape)
-        self.assertEqual(self.traj2.curve_array.shape, \
-            self.traj2_grad.curve_array.shape)
+        self.assertEqual(self.traj1.shape, self.traj1_grad.shape)
+        self.assertEqual(self.traj2.shape, self.traj2_grad.shape)
 
         # outputs are real numbers
         temp = True
@@ -96,10 +94,10 @@ class TestTrajectoryFunctions(unittest.TestCase):
         self.assertTrue(temp)
 
         # correct values
-        traj1_grad = np.zeros(self.traj1.curve_array.shape)
-        traj2_grad = np.zeros(self.traj2.curve_array.shape)
-        for i in range(self.traj2.curve_array.shape[1]):
-            s = ((2*np.pi)/self.traj2.curve_array.shape[1])*i
+        traj1_grad = np.zeros(self.traj1.shape)
+        traj2_grad = np.zeros(self.traj2.shape)
+        for i in range(self.traj2.shape[1]):
+            s = ((2*np.pi)/self.traj2.shape[1])*i
             traj1_grad[0, i] = -np.sin(s)
             traj1_grad[1, i] = -np.cos(s)
             traj2_grad[0, i] = -2*np.sin(s)
@@ -169,8 +167,8 @@ class TestTrajectoryFunctions(unittest.TestCase):
         self.assertTrue(temp2)
 
         # same response for trajectories at crossing points
-        cross_i1 = int(((self.traj1.curve_array.shape[1])/(2*np.pi))*(np.pi/2))
-        cross_i2 = int(((self.traj1.curve_array.shape[1])/(2*np.pi))*((3*np.pi)/2))
+        cross_i1 = int(((self.traj1.shape[1])/(2*np.pi))*(np.pi/2))
+        cross_i2 = int(((self.traj1.shape[1])/(2*np.pi))*((3*np.pi)/2))
         traj1_cross1_resp1 = traj1_response1.curve_array[:, cross_i1]
         traj2_cross1_resp1 = traj2_response1.curve_array[:, cross_i1]
         traj1_cross2_resp1 = traj1_response1.curve_array[:, cross_i2]
@@ -196,6 +194,7 @@ class TestTrajectoryFunctions(unittest.TestCase):
         self.assertTrue(np.allclose(traj1_cross1_nl2, traj2_cross1_nl2))
         self.assertTrue(np.allclose(traj1_cross2_nl2, traj2_cross2_nl2))
 
+    # ADD TEST FOR TRANSPOSE FEATURE
     def test_jacob_init(self):
         self.sys1.parameters['mu'] = 1
         self.sys2.parameters['mu'] = 1
@@ -204,8 +203,8 @@ class TestTrajectoryFunctions(unittest.TestCase):
 
         # outputs are numbers
         temp1 = True
-        rindex1 = int(rand.random()*(np.shape(self.traj1.curve_array)[1]))
-        rindex2 = int(rand.random()*(np.shape(self.traj2.curve_array)[1]))
+        rindex1 = int(rand.random()*(self.traj1.shape[1]))
+        rindex2 = int(rand.random()*(self.traj2.shape[1]))
         output1 = sys1_jac(rindex1)
         output2 = sys2_jac(rindex2)
         if output1.dtype != np.int64 and output1.dtype != np.float64:

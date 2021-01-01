@@ -35,7 +35,7 @@ class Trajectory:
         plot()
     """
 
-    __slots__ = ['curve_array', 'curve_func']
+    __slots__ = ['curve_array', 'curve_func', 'shape']
     __array_priority__ = 1e16
 
     def __init__(self, curve, disc = 64):
@@ -55,12 +55,14 @@ class Trajectory:
             if len(np.shape(curve)) == 2:
                 self.curve_array = curve
                 self.curve_func = None
+                self.shape = np.shape(curve)
             else:
                 raise AttributeError("The trajectory array has to 2D (only \
                 rows and columns)!")
         elif hasattr(curve, '__call__'):    
             self.curve_array = self.func2array(curve, time_disc = disc)
             self.curve_func = curve
+            self.shape = np.shape(self.curve_array)
         else:
             raise TypeError("Curve variable has to be either a function or a \
             2D numpy array!")
@@ -111,7 +113,7 @@ class Trajectory:
         if type(factor) == np.ndarray:
             return Trajectory(np.matmul(factor, self.curve_array))
         elif hasattr(factor, '__call__'):
-            s_disc = np.shape(self.curve_array)
+            s_disc = self.shape
             new_traj = np.zeros(s_disc)
             for i in range(s_disc[1]):
                 new_traj[:, i] = np.matmul(factor(i), self.curve_array[:, i])
@@ -139,7 +141,7 @@ class Trajectory:
         """
         import trajectory_functions as traj_funcs
         
-        if np.shape(self.curve_array)[0] == 2:
+        if self.shape[0] == 2:
             # plotting trajectory
             fig = plt.figure()
             ax = fig.gca()
@@ -150,8 +152,7 @@ class Trajectory:
             # add gradient
             if gradient != None:
                 grad = traj_funcs.traj_grad(self)
-                for i in range(0, np.shape(self.curve_array)[1], \
-                int(1/gradient)):
+                for i in range(0, self.shape[1], int(1/gradient)):
                     ax.quiver(self.curve_array[0, i], self.curve_array[1, i], \
                     grad.curve_array[0, i], grad.curve_array[1, i])
             plt.show()

@@ -23,7 +23,7 @@ def traj_grad(traj):
             the gradient of the input trajectory
     """
     # number of discretised time locations
-    time_disc = np.shape(traj.curve_array)[1]
+    time_disc = traj.shape[1]
 
     # FFT along the time dimension
     mode_array = np.fft.rfft(traj.curve_array, axis = 1)
@@ -61,7 +61,7 @@ def average_over_s(traj):
     
     # initialise vector to hold integration results
     traj_disc = np.linspace(0, 2*np.pi, np.shape(integ_traj)[1])
-    integ_vec = np.zeros([np.shape(traj.curve_array)[0]])
+    integ_vec = np.zeros([traj.shape[0]])
 
     # loop over each dimension to evaluate the integration
     for i in range(np.shape(integ_traj)[0]):
@@ -88,7 +88,7 @@ def traj_inner_prod(traj1, traj2):
             their domains, s
     """
     # number of time locations
-    disc_size = np.shape(traj1.curve_array)[1]
+    disc_size = traj1.shape[1]
 
     # initialise output array
     product_array = np.zeros([1, disc_size])
@@ -121,7 +121,7 @@ def traj_response(traj, func):
             instance of the Trajectory class
     """
     # initialise arrays
-    array_size = np.shape(traj.curve_array)
+    array_size = traj.shape
     response_array = np.zeros(array_size)
     
     # evaluate response
@@ -169,7 +169,7 @@ def jacob_init(traj, sys, if_transp = False):
         # test for input
         if i%1 != 0:
             raise TypeError("Inputs are not of the correct type!")
-        if i >= np.shape(traj.curve_array)[1]:
+        if i >= traj.shape[1]:
             raise ValueError("Input index is too large!")
 
         # make sure index is integer
