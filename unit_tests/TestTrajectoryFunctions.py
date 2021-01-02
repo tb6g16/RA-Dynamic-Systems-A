@@ -194,12 +194,13 @@ class TestTrajectoryFunctions(unittest.TestCase):
         self.assertTrue(np.allclose(traj1_cross1_nl2, traj2_cross1_nl2))
         self.assertTrue(np.allclose(traj1_cross2_nl2, traj2_cross2_nl2))
 
-    # ADD TEST FOR TRANSPOSE FEATURE
     def test_jacob_init(self):
         self.sys1.parameters['mu'] = 1
         self.sys2.parameters['mu'] = 1
         sys1_jac = traj_funcs.jacob_init(self.traj1, self.sys1)
         sys2_jac = traj_funcs.jacob_init(self.traj2, self.sys2)
+        sys1_jac_tran = traj_funcs.jacob_init(self.traj1, self.sys1, if_transp = True)
+        sys2_jac_tran = traj_funcs.jacob_init(self.traj2, self.sys2, if_transp = True)
 
         # outputs are numbers
         temp1 = True
@@ -228,6 +229,12 @@ class TestTrajectoryFunctions(unittest.TestCase):
         sys2_jac_true = vis.jacobian(rstate2)
         self.assertTrue(np.allclose(output1, sys1_jac_true))
         self.assertTrue(np.allclose(output2, sys2_jac_true))
+
+        # transpose correct
+        output3 = sys1_jac_tran(rindex1)
+        output4 = sys2_jac_tran(rindex2)
+        self.assertTrue(np.array_equal(output3, np.transpose(sys1_jac_true)))
+        self.assertTrue(np.array_equal(output4, np.transpose(sys2_jac_true)))
 
     def test_average_over_s(self):
         traj1_av = traj_funcs.average_over_s(self.traj1)
