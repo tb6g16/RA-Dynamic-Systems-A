@@ -37,9 +37,9 @@ class TestResidualFunctions(unittest.TestCase):
         # generating random frequencies and system parameters
         freq1 = rand.uniform(-10, 10)
         freq2 = rand.uniform(-10, 10)
-        mu1 = rand.uniform(-10, 10)
-        mu2 = rand.uniform(-10, 10)
-        r = rand.uniform(-10, 10)
+        mu1 = rand.uniform(0, 10)
+        mu2 = rand.uniform(0, 10)
+        r = rand.uniform(0, 10)
 
         # apply parameters
         self.sys1.parameters['mu'] = mu1
@@ -85,16 +85,16 @@ class TestResidualFunctions(unittest.TestCase):
             s = ((2*np.pi)/self.traj1.shape[1])*i
             lr_traj1_sys1_true[0, i] = (1 - freq1)*np.sin(s)
             lr_traj1_sys1_true[1, i] = (mu1*(1 - (np.cos(s)**2))*np.sin(s)) + ((1 - freq1)*np.cos(s))
-            lr_traj1_sys2_true[0, i] = ((1 - freq1)*np.sin(s)) - (mu2*np.cos(s)*((r**2) - 1))
-            lr_traj1_sys2_true[1, i] = ((1 - freq1)*np.cos(s)) + (mu2*np.sin(s)*((r**2) - 1))
+            lr_traj1_sys2_true[0, i] = ((1 - freq1)*np.sin(s)) - (mu2*np.cos(s)*(r - 1))
+            lr_traj1_sys2_true[1, i] = ((1 - freq1)*np.cos(s)) + (mu2*np.sin(s)*(r - 1))
         lr_traj1_sys1_true = Trajectory(lr_traj1_sys1_true)
         lr_traj1_sys2_true = Trajectory(lr_traj1_sys2_true)
         for i in range(self.traj2.shape[1]):
             s = ((2*np.pi)/self.traj1.shape[1])*i
             lr_traj2_sys1_true[0, i] = (1 - (2*freq2))*np.sin(s)
             lr_traj2_sys1_true[1, i] = ((2 - freq2)*np.cos(s)) + (mu1*(1 - (4*(np.cos(s)**2)))*np.sin(s))
-            lr_traj2_sys2_true[0, i] = ((1 - (2*freq2))*np.sin(s)) - (2*mu2*np.cos(s)*((r**2) - np.sqrt((4*(np.cos(s)**2)) + (np.sin(s)**2))))
-            lr_traj2_sys2_true[1, i] = ((2 - freq2)*np.cos(s)) + (mu2*np.sin(s)*((r**2) - np.sqrt((4*(np.cos(s)**2)) + (np.sin(s)**2))))
+            lr_traj2_sys2_true[0, i] = ((1 - (2*freq2))*np.sin(s)) - (2*mu2*np.cos(s)*(r - np.sqrt((4*(np.cos(s)**2)) + (np.sin(s)**2))))
+            lr_traj2_sys2_true[1, i] = ((2 - freq2)*np.cos(s)) + (mu2*np.sin(s)*(r - np.sqrt((4*(np.cos(s)**2)) + (np.sin(s)**2))))
         lr_traj2_sys1_true = Trajectory(lr_traj2_sys1_true)
         lr_traj2_sys2_true = Trajectory(lr_traj2_sys2_true)
         self.assertEqual(lr_traj1_sys1, lr_traj1_sys1_true)
@@ -106,9 +106,9 @@ class TestResidualFunctions(unittest.TestCase):
         # generating random frequencies and system parameters
         freq1 = rand.uniform(-10, 10)
         freq2 = rand.uniform(-10, 10)
-        mu1 = rand.uniform(-10, 10)
-        mu2 = rand.uniform(-10, 10)
-        r = rand.uniform(-10, 10)
+        mu1 = rand.uniform(0, 10)
+        mu2 = rand.uniform(0, 10)
+        r = rand.uniform(0, 10)
 
         # apply parameters
         self.sys1.parameters['mu'] = mu1
@@ -152,9 +152,9 @@ class TestResidualFunctions(unittest.TestCase):
         # correct values
         gr_traj1_sys1_true = ((5*(mu1**2))/32) + (((freq1 - 1)**2)/2)
         gr_traj2_sys1_true = (1/4)*((((2*freq2) - 1)**2) + ((2 - freq2)**2) + mu1**2)
-        gr_traj1_sys2_true = (1/2)*((1 - freq1)**2 + ((mu2**2)*(((r**2) - 1)**2)))
+        gr_traj1_sys2_true = (1/2)*((1 - freq1)**2 + ((mu2**2)*((r - 1)**2)))
         # I = integ.quad(integrand, 0, 2*np.pi)[0]
-        # gr_traj2_sys2_true = (1/4)*(((b + (freq2*a))**2) + ((a + (freq2*b))**2) + ((mu2**2)*(r**4)*((a**2) + (b**2))) + (((mu2**2)/4)*((3*(a**4)) + (2*(a**2)*(b**2)) + (3*(b**4)))) + I)
+        # gr_traj2_sys2_true = (1/4)*(((b + (freq2*a))**2) + ((a + (freq2*b))**2) + ((mu2**2)*(r**2)*((a**2) + (b**2))) + (((mu2**2)/4)*((3*(a**4)) + (2*(a**2)*(b**2)) + (3*(b**4)))) + I)
         self.assertAlmostEqual(gr_traj1_sys1, gr_traj1_sys1_true, places = 6)
         self.assertAlmostEqual(gr_traj2_sys1, gr_traj2_sys1_true, places = 6)
         self.assertAlmostEqual(gr_traj1_sys2, gr_traj1_sys2_true, places = 6)
@@ -163,16 +163,11 @@ class TestResidualFunctions(unittest.TestCase):
 
     def test_global_residual_grad(self):
         # generating random frequencies and system parameters
-        # freq1 = rand.uniform(-10, 10)
-        freq1 = 1
+        freq1 = rand.uniform(-10, 10)
         freq2 = rand.uniform(-10, 10)
-        # freq2 = 1
-        mu1 = rand.uniform(-10, 10)
-        # mu1 = 0
-        # mu2 = rand.uniform(-10, 10)
-        mu2 = 1
-        # r = rand.uniform(-10, 10)
-        r = 2
+        mu1 = rand.uniform(0, 10)
+        mu2 = rand.uniform(0, 10)
+        r = rand.uniform(0, 10)
 
         # apply parameters
         self.sys1.parameters['mu'] = mu1
@@ -228,9 +223,9 @@ class TestResidualFunctions(unittest.TestCase):
         self.assertEqual(gr_grad_traj_traj1_sys1, gr_grad_traj_traj1_sys1_FD)
         # Mostly passes with rtol, atol = 1e-2
         self.assertEqual(gr_grad_traj_traj2_sys1, gr_grad_traj_traj2_sys1_FD)
-        # Passes consistently with rtol, atol = 1e-3
+        # Passes consistently with rtol, atol = 5e-1
         self.assertEqual(gr_grad_traj_traj1_sys2, gr_grad_traj_traj1_sys2_FD)
-        # Passes consistently with rtol, atol = 1e-2
+        # Passes consistently with rtol, atol = 5e-1
         self.assertEqual(gr_grad_traj_traj2_sys2, gr_grad_traj_traj2_sys2_FD)
         self.assertAlmostEqual(gr_grad_freq_traj1_sys1, gr_grad_freq_traj1_sys1_FD, places = 6)
         self.assertAlmostEqual(gr_grad_freq_traj2_sys1, gr_grad_freq_traj2_sys1_FD, places = 6)
