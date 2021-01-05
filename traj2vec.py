@@ -22,14 +22,11 @@ def traj2vec(traj, freq):
         opt_vector: numpy array
             the optimisation vector defined by the trajectory frequency pair
     """
-    # array_size_x = np.shape(traj.curve_array)[0]
-    # array_size_y = np.shape(traj.curve_array)[1]
-    size = traj.shape
-    dofs = (size[0]*size[1]) + 1
+    dofs = (traj.shape[0]*traj.shape[1]) + 1
     vector = np.zeros([dofs])
-    for j in range(size[1]):
-        for i in range(size[0]):
-            vector[i + j*size[0]] = traj[i, j]
+    for j in range(traj.shape[1]):
+        for i in range(traj.shape[0]):
+            vector[i + j*traj.shape[0]] = traj[i, j]
     vector[-1] = freq
     return vector
 
