@@ -28,7 +28,7 @@ class System:
         plot()
     """
 
-    __slots__ = ['response', 'jacobian', 'nl_factor', 'parameters']
+    __slots__ = ['response', 'jacobian', 'nl_factor', 'nl_con_grads', 'parameters']
 
     def __init__(self, function_file):
         """
@@ -42,12 +42,12 @@ class System:
                 behaviour of the dynamical system, with optional parameters
                 given as a separate deictionary called "defaults"
         """
-        if ('response' or 'jacobian' or 'nl_factor') not in dir(function_file):
-            raise AttributeError("The file does not contain the required \
-                functions!")
+        if ('response' or 'jacobian' or 'nl_factor' or 'init_nl_con_grads') not in dir(function_file):
+            raise AttributeError("The file does not contain the required functions!")
         self.response = function_file.response
         self.jacobian = function_file.jacobian
         self.nl_factor = function_file.nl_factor
+        self.nl_con_grads = function_file.init_nl_con_grads()
         if 'defaults' in dir(function_file):
             self.parameters = function_file.defaults
         else:
@@ -108,10 +108,10 @@ if __name__ == "__main__":
     # system1.parameters['mu'] = 2
     # system1.plot(domain = [[-2, 2], [-2, 2]])
 
-    system2.parameters['mu'] = 2
-    system2.plot(domain = [[-2, 2], [-2, 2]])
-    system2.parameters['r'] = 0.5
-    system2.plot(domain = [[-2, 2], [-2, 2]])
+    # system2.parameters['mu'] = 2
+    # system2.plot(domain = [[-2, 2], [-2, 2]])
+    # system2.parameters['r'] = 0.5
+    # system2.plot(domain = [[-2, 2], [-2, 2]])
 
     # print(system.response(np.ones([2, 1])))
     # print(system.nl_factor(np.ones([2, 1])))

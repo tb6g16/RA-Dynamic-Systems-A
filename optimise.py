@@ -2,15 +2,14 @@
 # trajectory and fundamental frequency to find the lowest global residual for
 # a given dynamical system.
 
-# Thomas Burton - November 2020
-
 import numpy as np
 import scipy.optimize as opt
 import scipy.integrate as integ
 from Trajectory import Trajectory
 from System import System
-from Problem import Problem
 from traj2vec import traj2vec, vec2traj
+import trajectory_functions as traj_funcs
+import residual_functions as res_funcs
 
 def init_opt_funcs(sys, dim):
     """
@@ -23,13 +22,11 @@ def init_opt_funcs(sys, dim):
             that defines a trajectory frequency pair, for the purpose of
             optimisation.
         """
-        # unpack vector
+        # unpack trajectory
         traj, freq = vec2traj(opt_vector, dim)
 
-        # initialise problem class
-        current = Problem(traj, sys, freq)
-
-        return current.global_residual[0]
+        # calculate global residual and return
+        return res_funcs.global_residual(traj, sys, freq)
 
     def traj_global_res_jac(opt_vector):
         """
@@ -37,17 +34,15 @@ def init_opt_funcs(sys, dim):
             given vector that defines a trajectory frequency pair, for the
             purpose of optimisation.
         """
-        # unpack vector
+        # unpack trajectory
         traj, freq = vec2traj(opt_vector, dim)
 
-        # initialise problem class
-        current = Problem(traj, sys, freq)
+        # calculate global residual gradients
+        gr_traj, gr_freq = res_funcs.global_residual_grad(traj, sys, freq)
 
-        # calculate gradient values
-        global_res_wrt_traj = current.dglobal_res_dtraj()
-        global_res_wrt_freq = current.dglobal_res_dfreq()
-
-        return traj2vec(global_res_wrt_traj, global_res_wrt_freq)
+        # convert back to vector and return
+        return traj2vec(gr_traj, gr_freq)
+    
     return traj_global_res, traj_global_res_jac
 
 def init_constraints(sys, dim, mean):
@@ -61,43 +56,80 @@ def init_constraints(sys, dim, mean):
             This function is the input to the NonlinearConstraint class to
             intialise it.
         """
+        # unpack trajectory
         traj, _ = vec2traj(opt_vector, dim)
-        traj_fluc = Trajectory(traj.curve_array - mean)
-        mean_fluc_const = traj_fluc.average_over_s()
-        traj_fluc_nl = traj_fluc.traj_nl_response(sys)
-        nl_fluc_const = np.squeeze(sys.response(mean)) + traj_fluc_nl.average_over_s()
-        return np.concatenate((mean_fluc_const, nl_fluc_const), axis = 0)
-    eq = np.zeros([2*dim])
-    return opt.NonlinearConstraint(constraints, eq, eq)
+
+        # calculate fluctuation trajectory
+        fluc = Trajectory(traj.curve_array - mean)
+
+        # evaluate mean constraint
+        con1 = traj_funcs.average_over_s(fluc)
+
+        # evaluate nonlinear constraint (RANS)
+        nl_fluc = traj_funcs.traj_response(fluc, sys.nl_factor)
+        nl_fluc_av = traj_funcs.average_over_s(nl_fluc)
+        con2 = np.squeeze(sys.response(mean)) + nl_fluc_av
+
+        # combine and return
+        return np.concatenate((con1, con2), axis = 0)
+
+    def constraints_grad(opt_vector):
+        """
+            This function calculate the gradients of the constraint functionals
+            at the given trajectory and frequency (vector).
+        """
+        # unpack trajectory
+        traj, _ = vec2traj(opt_vector, dim)
+
+        # define jacobian matrix
+        jac = np.zeros([2*dim, (dim*traj.shape[1]) + 1])
+
+        # first constraint gradients
+        for i in range(dim):
+            con1i_traj_grad = np.zeros([dim, traj.shape[1]])
+            con1i_traj_grad[i, :] = 1/(2*np.pi)
+            con1i_grad_vec = traj2vec(con1i_traj_grad, 0)
+            jac[i, :] = con1i_grad_vec
+
+        # second constraint gradients
+        for i in range(dim):
+            con2i_traj_grad_func = sys.nl_con_grads[i]
+            con2i_traj_grad = traj_funcs.traj_response(traj, con2i_traj_grad_func)
+            con2i_grad_vec = traj2vec(con2i_traj_grad, 0)
+            jac[i + dim, :] = con2i_grad_vec
+        
+        return jac
+
+    return constraints, constraints_grad
 
 if __name__ == "__main__":
     from test_cases import unit_circle as uc
     from test_cases import van_der_pol as vpd
+    from test_cases import viswanath as vis
 
     sys = System(vpd)
-    sys.parameters['mu'] = 1
-    circle = Trajectory(uc.x)
+    sys.parameters['mu'] = 2
+    # sys = System(vis)
+    # sys.parameters['mu'] = 1
+    circle = 2*Trajectory(uc.x, disc = 128)
     freq = 1
     dim = 2
 
     res_func, jac_func = init_opt_funcs(sys, dim)
+    cons, cons_grad = init_constraints(sys, dim, np.zeros([2, 1]))
+    constraint = opt.NonlinearConstraint(cons, np.zeros(2*dim), np.zeros(2*dim), jac = cons_grad)
 
-    constraint = init_constraints(sys, dim, np.zeros([2, 1]))
+    op_vec = opt.minimize(res_func, traj2vec(circle, freq), jac = jac_func, method = 'L-BFGS-B')
+    # op_vec = opt.minimize(res_func, traj2vec(circle, freq), jac = jac_func, constraints = constraint)
 
-    # op_vec = opt.minimize(res_func, traj2vec(circle, freq), options = {'maxiter': 1})
-    op_vec = opt.minimize(res_func, traj2vec(circle, freq), jac = jac_func) # , method = 'L-BFGS-B')
-    # op_vec = opt.minimize(res_func, traj2vec(circle, freq), jac = jac_func,\
-    #     constraints = constraint)
     print(op_vec.message)
     print("Number of iterations: " + str(op_vec.nit))
     op_traj, op_freq = vec2traj(op_vec.x, dim)
 
-    op_traj.plot(gradient = True, gradient_density = 32/256)
-    traj_diff = op_traj - circle
-    traj_diff.plot(gradient = True, gradient_density = 32/256)
-
-    print(res_func(traj2vec(circle, freq)))
-    print(res_func(traj2vec(op_traj, op_freq)))
+    print("Period of orbit: " + str((2*np.pi)/op_freq))
+    print("Global residual before: " + str(res_func(traj2vec(circle, freq))))
+    print("Global residual after: " + str(res_func(traj2vec(op_traj, op_freq))))
+    op_traj.plot(gradient = 16/64)
 
     # test jacbian is zero also
     # print(jac_func(traj2vec(circle, freq)))

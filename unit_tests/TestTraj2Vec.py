@@ -2,7 +2,7 @@
 # required to perform the optimisation.
 
 import sys
-sys.path.append(r"C:\Users\user\Desktop\PhD\Bruno Paper\Code\RA Dynamical System")
+sys.path.append(r"C:\Users\user\Desktop\PhD\Bruno Paper\Code\Approach A")
 import unittest
 import numpy as np
 from Trajectory import Trajectory

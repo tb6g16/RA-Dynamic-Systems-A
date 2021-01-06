@@ -50,3 +50,18 @@ def nl_factor(x, defaults = defaults):
     nl_vector[1] = -mu*(x[0]**2)*x[1]
 
     return nl_vector
+
+# these functions are here because the system has non-quadratic nonlinearity
+def init_nl_con_grads():
+
+    def nl_con_grad1(x, defaults = defaults):
+        return np.zeros(2)
+
+    def nl_con_grad2(x, defaults = defaults):
+        mu = defaults['mu']
+        vec = np.zeros(2)
+        vec[0] = -mu*x[0]*x[1]/np.pi
+        vec[1] = -(mu/(2*np.pi))*(x[0]**2)
+        return vec
+
+    return [nl_con_grad1, nl_con_grad2]

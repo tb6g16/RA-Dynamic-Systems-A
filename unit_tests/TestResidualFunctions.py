@@ -2,7 +2,7 @@
 # in the residual_functions file
 
 import sys
-sys.path.append(r"C:\Users\user\Desktop\PhD\Bruno Paper\Code\RA Dynamical System")
+sys.path.append(r"C:\Users\user\Desktop\PhD\Bruno Paper\Code\Approach A")
 import unittest
 import numpy as np
 import scipy.integrate as integ

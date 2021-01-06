@@ -53,3 +53,13 @@ def nl_factor(x, defaults = defaults):
     nl_vector[1] = mu*x[1]*r
 
     return nl_vector
+
+def init_nl_con_grads():
+
+    def nl_con_grad1(x, defaults = defaults):
+        pass
+
+    def nl_con_grad2(x, defaults = defaults):
+        pass
+
+    return [nl_con_grad1, nl_con_grad2]

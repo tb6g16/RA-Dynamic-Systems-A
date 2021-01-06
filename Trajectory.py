@@ -85,7 +85,7 @@ class Trajectory:
         curve_array = np.zeros([np.shape(curve_func(0))[0], time_disc])
         t = np.linspace(0, 2*np.pi*(1 - 1/time_disc), time_disc)
         for i in range(time_disc):
-                curve_array[:, i] = curve_func(t[i])
+            curve_array[:, i] = curve_func(t[i])
         return curve_array
 
     def __add__(self, other_traj):
@@ -113,9 +113,9 @@ class Trajectory:
         if type(factor) == np.ndarray:
             return Trajectory(np.matmul(factor, self.curve_array))
         elif hasattr(factor, '__call__'):
-            s_disc = self.shape
-            new_traj = np.zeros(s_disc)
-            for i in range(s_disc[1]):
+            shape = self.shape
+            new_traj = np.zeros(shape)
+            for i in range(shape[1]):
                 new_traj[:, i] = np.matmul(factor(i), self[:, i])
             return Trajectory(new_traj)
         else:
@@ -208,18 +208,3 @@ class Trajectory:
     #     else:
     #         raise ValueError("Cannot plot trajectories in higher dimensions!")
     #     return None
-
-if __name__ == '__main__':
-    from test_cases import unit_circle as circ
-    from test_cases import ellipse as elps
-
-    unit_circle1 = Trajectory(circ.x)
-    unit_circle2 = 0.5*Trajectory(circ.x)
-
-    unit_circle3 = np.pi*unit_circle1 + unit_circle2
-
-    unit_circle1.plot(gradient = 16/64)
-    unit_circle3.plot(gradient = 16/64)
-    
-    ellipse = Trajectory(elps.x)
-    ellipse.plot(gradient = 16/64)
