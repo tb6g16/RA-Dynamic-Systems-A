@@ -1,5 +1,5 @@
 # This file contains the function definitions that calculate the residuals and
-# their associated gradients
+# their associated gradients.
 
 import numpy as np
 import scipy.integrate as integ
