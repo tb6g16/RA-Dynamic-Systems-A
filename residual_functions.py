@@ -7,7 +7,7 @@ from Trajectory import Trajectory
 from System import System
 import trajectory_functions as traj_funcs
 
-def local_residual(traj, sys, freq):
+def local_residual(traj, sys, freq, mean):
     """
         This function calculates the local residual of a trajectory through a
         state-space defined by a given dynamical system.
@@ -30,13 +30,25 @@ def local_residual(traj, sys, freq):
     # compute gradient of trajectory
     traj_grad = traj_funcs.traj_grad(traj)
 
+    # evaluate mean nonlinearity
+    # c = Trajectory(sys.response(mean)*np.ones(traj.shape))
+
+    # evaluate first order correction
+    # jac_mean = sys.jacobian(mean)
+    # jac_mean_traj_prod = jac_mean*traj
+
+    # evaluate nonlinear component
+    # nl_response = traj_funcs.traj_response(traj, sys.nl_factor)
+
     # evaluate system response at the states of the trajectory
-    response = traj_funcs.traj_response(traj, sys.response)
+    full_traj = Trajectory(traj.curve_array + mean)
+    response = traj_funcs.traj_response(full_traj, sys.response)
 
     # compute and return local residual trajectory
     return (freq*traj_grad) - response
+    # return (freq*traj_grad) - c - (jac_mean @ traj) - nl_response
 
-def global_residual(traj, sys, freq):
+def global_residual(traj, sys, freq, mean):
     """
         This function calculates the global residual of a trajectory through a
         state-space defined by a given dynamical system.
@@ -56,7 +68,7 @@ def global_residual(traj, sys, freq):
             the global residual of the trajectory-system pair
     """
     # obtain set of local residual vectors
-    local_res = local_residual(traj, sys, freq)
+    local_res = local_residual(traj, sys, freq, mean)
 
     # take norm of the local residual vectors
     local_res_norm_sq = traj_funcs.traj_inner_prod(local_res, local_res)
@@ -64,7 +76,7 @@ def global_residual(traj, sys, freq):
     # integrate over the discretised time
     return 0.5*traj_funcs.average_over_s(local_res_norm_sq)[0]
 
-def global_residual_grad(traj, sys, freq):
+def global_residual_grad(traj, sys, freq, mean):
     """
         This function calculates the gradient of the global residual with
         respect to the trajectory and the associated fundamental frequency for
@@ -88,7 +100,7 @@ def global_residual_grad(traj, sys, freq):
             the gradient of the global residual with respect to the trajectory
     """
     # calculate local residual trajectory
-    local_res = local_residual(traj, sys, freq)
+    local_res = local_residual(traj, sys, freq, mean)
 
     # calculate trajectory gradients
     traj_grad = traj_funcs.traj_grad(traj)

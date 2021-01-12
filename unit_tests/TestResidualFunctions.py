@@ -47,10 +47,10 @@ class TestResidualFunctions(unittest.TestCase):
         self.sys2.parameters['r'] = r
 
         # generate local residual trajectories
-        lr_traj1_sys1 = res_funcs.local_residual(self.traj1, self.sys1, freq1)
-        lr_traj2_sys1 = res_funcs.local_residual(self.traj2, self.sys1, freq2)
-        lr_traj1_sys2 = res_funcs.local_residual(self.traj1, self.sys2, freq1)
-        lr_traj2_sys2 = res_funcs.local_residual(self.traj2, self.sys2, freq2)
+        lr_traj1_sys1 = res_funcs.local_residual(self.traj1, self.sys1, freq1, np.zeros([2, 1]))
+        lr_traj2_sys1 = res_funcs.local_residual(self.traj2, self.sys1, freq2, np.zeros([2, 1]))
+        lr_traj1_sys2 = res_funcs.local_residual(self.traj1, self.sys2, freq1, np.zeros([2, 1]))
+        lr_traj2_sys2 = res_funcs.local_residual(self.traj2, self.sys2, freq2, np.zeros([2, 1]))
 
         # output is of Trajectory class
         self.assertIsInstance(lr_traj1_sys1, Trajectory)
@@ -116,10 +116,10 @@ class TestResidualFunctions(unittest.TestCase):
         self.sys2.parameters['r'] = r
 
         # calculate global residuals
-        gr_traj1_sys1 = res_funcs.global_residual(self.traj1, self.sys1, freq1)
-        gr_traj2_sys1 = res_funcs.global_residual(self.traj2, self.sys1, freq2)
-        gr_traj1_sys2 = res_funcs.global_residual(self.traj1, self.sys2, freq1)
-        gr_traj2_sys2 = res_funcs.global_residual(self.traj2, self.sys2, freq2)
+        gr_traj1_sys1 = res_funcs.global_residual(self.traj1, self.sys1, freq1, np.zeros([2, 1]))
+        gr_traj2_sys1 = res_funcs.global_residual(self.traj2, self.sys1, freq2, np.zeros([2, 1]))
+        gr_traj1_sys2 = res_funcs.global_residual(self.traj1, self.sys2, freq1, np.zeros([2, 1]))
+        gr_traj2_sys2 = res_funcs.global_residual(self.traj2, self.sys2, freq2, np.zeros([2, 1]))
 
         # output is a positive number
         temp = True
@@ -175,10 +175,10 @@ class TestResidualFunctions(unittest.TestCase):
         self.sys2.parameters['r'] = r
 
         # calculate global residual gradients
-        gr_grad_traj_traj1_sys1, gr_grad_freq_traj1_sys1 = res_funcs.global_residual_grad(self.traj1, self.sys1, freq1)
-        gr_grad_traj_traj2_sys1, gr_grad_freq_traj2_sys1 = res_funcs.global_residual_grad(self.traj2, self.sys1, freq2)
-        gr_grad_traj_traj1_sys2, gr_grad_freq_traj1_sys2 = res_funcs.global_residual_grad(self.traj1, self.sys2, freq1)
-        gr_grad_traj_traj2_sys2, gr_grad_freq_traj2_sys2 = res_funcs.global_residual_grad(self.traj2, self.sys2, freq2)
+        gr_grad_traj_traj1_sys1, gr_grad_freq_traj1_sys1 = res_funcs.global_residual_grad(self.traj1, self.sys1, freq1, np.zeros([2, 1]))
+        gr_grad_traj_traj2_sys1, gr_grad_freq_traj2_sys1 = res_funcs.global_residual_grad(self.traj2, self.sys1, freq2, np.zeros([2, 1]))
+        gr_grad_traj_traj1_sys2, gr_grad_freq_traj1_sys2 = res_funcs.global_residual_grad(self.traj1, self.sys2, freq1, np.zeros([2, 1]))
+        gr_grad_traj_traj2_sys2, gr_grad_freq_traj2_sys2 = res_funcs.global_residual_grad(self.traj2, self.sys2, freq2, np.zeros([2, 1]))
 
         # outputs are numbers
         temp_traj = True
@@ -203,10 +203,10 @@ class TestResidualFunctions(unittest.TestCase):
         self.assertTrue(temp_freq)
 
         # correct values (compared with FD approximation)
-        gr_grad_traj_traj1_sys1_FD, gr_grad_freq_traj1_sys1_FD = self.gen_gr_grad_FD(self.traj1, self.sys1, freq1)
-        gr_grad_traj_traj2_sys1_FD, gr_grad_freq_traj2_sys1_FD = self.gen_gr_grad_FD(self.traj2, self.sys1, freq2)
-        gr_grad_traj_traj1_sys2_FD, gr_grad_freq_traj1_sys2_FD = self.gen_gr_grad_FD(self.traj1, self.sys2, freq1)
-        gr_grad_traj_traj2_sys2_FD, gr_grad_freq_traj2_sys2_FD = self.gen_gr_grad_FD(self.traj2, self.sys2, freq2)
+        gr_grad_traj_traj1_sys1_FD, gr_grad_freq_traj1_sys1_FD = self.gen_gr_grad_FD(self.traj1, self.sys1, freq1, np.zeros([2, 1]))
+        gr_grad_traj_traj2_sys1_FD, gr_grad_freq_traj2_sys1_FD = self.gen_gr_grad_FD(self.traj2, self.sys1, freq2, np.zeros([2, 1]))
+        gr_grad_traj_traj1_sys2_FD, gr_grad_freq_traj1_sys2_FD = self.gen_gr_grad_FD(self.traj1, self.sys2, freq1, np.zeros([2, 1]))
+        gr_grad_traj_traj2_sys2_FD, gr_grad_freq_traj2_sys2_FD = self.gen_gr_grad_FD(self.traj2, self.sys2, freq2, np.zeros([2, 1]))
 
         # fig, (ax1, ax2, ax3) = plt.subplots(figsize = (12, 5), nrows = 3)
         # pos1 = ax1.matshow(gr_grad_traj_traj2_sys2.curve_array)
@@ -233,7 +233,7 @@ class TestResidualFunctions(unittest.TestCase):
         self.assertAlmostEqual(gr_grad_freq_traj2_sys2, gr_grad_freq_traj2_sys2_FD, places = 6)
 
     @staticmethod
-    def gen_gr_grad_FD(traj, sys, freq, step = 1e-6):
+    def gen_gr_grad_FD(traj, sys, freq, mean, step = 1e-6):
         """
             This function uses finite differencing to compute the gradients of
             the global residual for all the DoFs (the discrete time coordinated
@@ -247,16 +247,16 @@ class TestResidualFunctions(unittest.TestCase):
             for j in range(traj.shape[1]):
                 traj_for = traj
                 traj_for[i, j] = traj[i, j] + step
-                gr_traj_for = res_funcs.global_residual(traj_for, sys, freq)
+                gr_traj_for = res_funcs.global_residual(traj_for, sys, freq, mean)
                 traj_back = traj
                 traj_back[i, j] = traj[i, j] - step
-                gr_traj_back = res_funcs.global_residual(traj_back, sys, freq)
+                gr_traj_back = res_funcs.global_residual(traj_back, sys, freq, mean)
                 gr_grad_FD_traj[i, j] = (gr_traj_for - gr_traj_back)/(2*step)
         gr_grad_FD_traj = Trajectory(gr_grad_FD_traj)
 
         # calculate gradient w.r.t frequency
-        gr_freq_for = res_funcs.global_residual(traj, sys, freq + step)
-        gr_freq_back = res_funcs.global_residual(traj, sys, freq - step)
+        gr_freq_for = res_funcs.global_residual(traj, sys, freq + step, mean)
+        gr_freq_back = res_funcs.global_residual(traj, sys, freq - step, mean)
         gr_grad_FD_freq = (gr_freq_for - gr_freq_back)/(2*step)
 
         return gr_grad_FD_traj, gr_grad_FD_freq

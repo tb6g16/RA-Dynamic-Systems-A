@@ -1,7 +1,5 @@
 # This file contains the class definition for a general trajectory in some
-# vector space. This will most commonly be a periodic state-space trajectory
-
-# Thomas Burton - October 2020
+# vector space. This will most commonly be a periodic state-space trajectory.
 
 import numpy as np
 import scipy.integrate as integ

@@ -11,7 +11,7 @@ from traj2vec import traj2vec, vec2traj
 import trajectory_functions as traj_funcs
 import residual_functions as res_funcs
 
-def init_opt_funcs(sys, dim):
+def init_opt_funcs(sys, dim, mean):
     """
         This functions initialises the optimisation vectors for a specific
         system.
@@ -26,7 +26,7 @@ def init_opt_funcs(sys, dim):
         traj, freq = vec2traj(opt_vector, dim)
 
         # calculate global residual and return
-        return res_funcs.global_residual(traj, sys, freq)
+        return res_funcs.global_residual(traj, sys, freq, mean)
 
     def traj_global_res_jac(opt_vector):
         """
@@ -38,7 +38,7 @@ def init_opt_funcs(sys, dim):
         traj, freq = vec2traj(opt_vector, dim)
 
         # calculate global residual gradients
-        gr_traj, gr_freq = res_funcs.global_residual_grad(traj, sys, freq)
+        gr_traj, gr_freq = res_funcs.global_residual_grad(traj, sys, freq, mean)
 
         # convert back to vector and return
         return traj2vec(gr_traj, gr_freq)
@@ -115,7 +115,7 @@ if __name__ == "__main__":
     freq = 1
     dim = 2
 
-    res_func, jac_func = init_opt_funcs(sys, dim)
+    res_func, jac_func = init_opt_funcs(sys, dim, np.zeros([2, 1]))
     cons, cons_grad = init_constraints(sys, dim, np.zeros([2, 1]))
     constraint = opt.NonlinearConstraint(cons, np.zeros(2*dim), np.zeros(2*dim), jac = cons_grad)
 

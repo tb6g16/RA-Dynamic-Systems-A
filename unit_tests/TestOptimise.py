@@ -1,5 +1,5 @@
 # This file contains the unit test for the optimise file that initialises the
-# objective function, constraints, and all their associated gradients
+# objective function, constraints, and all their associated gradients.
 
 import sys
 sys.path.append(r"C:\Users\user\Desktop\PhD\Bruno Paper\Code\RA Dynamical System")
