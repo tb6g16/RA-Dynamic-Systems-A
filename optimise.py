@@ -118,6 +118,7 @@ if __name__ == "__main__":
     res_func, jac_func = init_opt_funcs(sys, dim, np.zeros([2, 1]))
     cons, cons_grad = init_constraints(sys, dim, np.zeros([2, 1]))
     constraint = opt.NonlinearConstraint(cons, np.zeros(2*dim), np.zeros(2*dim), jac = cons_grad)
+    # constraint = opt.NonlinearConstraint(cons, np.zeros(2*dim), np.zeros(2*dim))
 
     op_vec = opt.minimize(res_func, traj2vec(circle, freq), jac = jac_func, method = 'L-BFGS-B')
     # op_vec = opt.minimize(res_func, traj2vec(circle, freq), jac = jac_func, constraints = constraint)
