@@ -6,6 +6,7 @@ sys.path.append(r"C:\Users\user\Desktop\PhD\Bruno Paper\Code\Approach A")
 import unittest
 import numpy as np
 import random as rand
+import scipy.integrate as integ
 from Trajectory import Trajectory
 from System import System
 import trajectory_functions as traj_funcs
@@ -90,7 +91,18 @@ class TestOptimise(unittest.TestCase):
         self.assertEqual(gr_freq_t2s2, gr_freq_t2s2_true)
 
     def test_constraints(self):
-        pass
+        cons_func_s1, _ = opt.init_constraints(self.sys1, 2, np.zeros([2, 1]))
+        cons_func_s2, _ = opt.init_constraints(self.sys2, 2, np.zeros([2, 1]))
+        cons_t1s1 = cons_func_s1(self.traj1_vec)
+        cons_t2s1 = cons_func_s1(self.traj2_vec)
+        cons_t1s2 = cons_func_s2(self.traj1_vec)
+        cons_t2s2 = cons_func_s2(self.traj2_vec)
+
+        # correct values
+        self.assertTrue(np.allclose(cons_t1s1, np.zeros(4)))
+        self.assertTrue(np.allclose(cons_t2s1, np.zeros(4)))
+        self.assertTrue(np.allclose(cons_t1s2, np.zeros(4)))
+        self.assertTrue(np.allclose(cons_t2s2, np.zeros(4)))
 
     def test_constraints_grad(self):
         pass

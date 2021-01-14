@@ -59,14 +59,11 @@ def init_constraints(sys, dim, mean):
         # unpack trajectory
         traj, _ = vec2traj(opt_vector, dim)
 
-        # calculate fluctuation trajectory
-        fluc = Trajectory(traj.curve_array - mean)
-
         # evaluate mean constraint
-        con1 = traj_funcs.average_over_s(fluc)
+        con1 = traj_funcs.average_over_s(traj)
 
         # evaluate nonlinear constraint (RANS)
-        nl_fluc = traj_funcs.traj_response(fluc, sys.nl_factor)
+        nl_fluc = traj_funcs.traj_response(traj, sys.nl_factor)
         nl_fluc_av = traj_funcs.average_over_s(nl_fluc)
         con2 = np.squeeze(sys.response(mean)) + nl_fluc_av
 
@@ -108,7 +105,7 @@ if __name__ == "__main__":
     from test_cases import viswanath as vis
 
     sys = System(vpd)
-    sys.parameters['mu'] = 2
+    sys.parameters['mu'] = 0.1
     # sys = System(vis)
     # sys.parameters['mu'] = 1
     circle = 2*Trajectory(uc.x, disc = 128)
@@ -119,18 +116,19 @@ if __name__ == "__main__":
     cons, cons_grad = init_constraints(sys, dim, np.zeros([2, 1]))
     constraint = opt.NonlinearConstraint(cons, np.zeros(2*dim), np.zeros(2*dim), jac = cons_grad)
     # constraint = opt.NonlinearConstraint(cons, np.zeros(2*dim), np.zeros(2*dim))
+    print(cons(traj2vec(circle, freq)))
 
     op_vec = opt.minimize(res_func, traj2vec(circle, freq), jac = jac_func, method = 'L-BFGS-B')
     # op_vec = opt.minimize(res_func, traj2vec(circle, freq), jac = jac_func, constraints = constraint)
 
-    print(op_vec.message)
-    print("Number of iterations: " + str(op_vec.nit))
+    # print(op_vec.message)
+    # print("Number of iterations: " + str(op_vec.nit))
     op_traj, op_freq = vec2traj(op_vec.x, dim)
 
-    print("Period of orbit: " + str((2*np.pi)/op_freq))
-    print("Global residual before: " + str(res_func(traj2vec(circle, freq))))
-    print("Global residual after: " + str(res_func(traj2vec(op_traj, op_freq))))
-    op_traj.plot(gradient = 16/64)
+    # print("Period of orbit: " + str((2*np.pi)/op_freq))
+    # print("Global residual before: " + str(res_func(traj2vec(circle, freq))))
+    # print("Global residual after: " + str(res_func(traj2vec(op_traj, op_freq))))
+    # op_traj.plot(gradient = 16/64)
 
     # test jacbian is zero also
     # print(jac_func(traj2vec(circle, freq)))
