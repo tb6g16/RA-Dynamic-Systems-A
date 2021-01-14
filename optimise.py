@@ -105,7 +105,7 @@ if __name__ == "__main__":
     from test_cases import viswanath as vis
 
     sys = System(vpd)
-    sys.parameters['mu'] = 0.1
+    sys.parameters['mu'] = 2
     # sys = System(vis)
     # sys.parameters['mu'] = 1
     circle = 2*Trajectory(uc.x, disc = 128)
@@ -118,10 +118,10 @@ if __name__ == "__main__":
     # constraint = opt.NonlinearConstraint(cons, np.zeros(2*dim), np.zeros(2*dim))
     print(cons(traj2vec(circle, freq)))
 
-    op_vec = opt.minimize(res_func, traj2vec(circle, freq), jac = jac_func, method = 'L-BFGS-B')
-    # op_vec = opt.minimize(res_func, traj2vec(circle, freq), jac = jac_func, constraints = constraint)
+    # op_vec = opt.minimize(res_func, traj2vec(circle, freq), jac = jac_func, method = 'L-BFGS-B')
+    op_vec = opt.minimize(res_func, traj2vec(circle, freq), jac = jac_func, constraints = constraint)
 
-    # print(op_vec.message)
+    print(op_vec.message)
     # print("Number of iterations: " + str(op_vec.nit))
     op_traj, op_freq = vec2traj(op_vec.x, dim)
 

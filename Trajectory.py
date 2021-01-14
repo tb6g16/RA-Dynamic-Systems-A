@@ -160,6 +160,12 @@ class Trajectory:
                 grad = traj_funcs.traj_grad(self)
                 for i in range(0, self.shape[1], int(1/gradient)):
                     ax.quiver(self[0, i], self[1, i], grad[0, i], grad[1, i])
+            
+            # plt.xlabel("$x$")
+            # plt.ylabel("$\dot{x}$")
+            # plt.xlim([-2.2, 2.2])
+            # plt.ylim([-4, 4])
+            # plt.grid()
             plt.show()
         else:
             raise ValueError("Bruh!")
