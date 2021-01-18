@@ -1,5 +1,5 @@
 # This file will hold the functions that define dynamical system and solution curve
-# for testing purposes
+# for testing purposes.
 
 import numpy as np
 

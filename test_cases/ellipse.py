@@ -1,5 +1,5 @@
 # This file contains the definition for a elliptic curve parameterised with
-# respect to s
+# respect to s.
 
 import numpy as np
 

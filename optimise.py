@@ -83,7 +83,7 @@ def init_constraints(sys, dim, mean):
 
         # first constraint gradients
         for i in range(dim):
-            con1i_traj_grad = np.zeros([dim, traj.shape[1]])
+            con1i_traj_grad = Trajectory(np.zeros([dim, traj.shape[1]]))
             con1i_traj_grad[i, :] = 1/(2*np.pi)
             con1i_grad_vec = traj2vec(con1i_traj_grad, 0)
             jac[i, :] = con1i_grad_vec
@@ -114,21 +114,22 @@ if __name__ == "__main__":
 
     res_func, jac_func = init_opt_funcs(sys, dim, np.zeros([2, 1]))
     cons, cons_grad = init_constraints(sys, dim, np.zeros([2, 1]))
-    constraint = opt.NonlinearConstraint(cons, np.zeros(2*dim), np.zeros(2*dim), jac = cons_grad)
+    constraints = {'type': 'eq', 'fun': cons, 'jac': cons_grad}
+    # constraint = opt.NonlinearConstraint(cons, np.zeros(2*dim), np.zeros(2*dim), jac = cons_grad)
     # constraint = opt.NonlinearConstraint(cons, np.zeros(2*dim), np.zeros(2*dim))
-    print(cons(traj2vec(circle, freq)))
+    # print(cons(traj2vec(circle, freq)))
 
-    # op_vec = opt.minimize(res_func, traj2vec(circle, freq), jac = jac_func, method = 'L-BFGS-B')
-    op_vec = opt.minimize(res_func, traj2vec(circle, freq), jac = jac_func, constraints = constraint)
+    op_vec = opt.minimize(res_func, traj2vec(circle, freq), jac = jac_func, method = 'L-BFGS-B')
+    # op_vec = opt.minimize(res_func, traj2vec(circle, freq), jac = jac_func, constraints = constraints)
 
     print(op_vec.message)
-    # print("Number of iterations: " + str(op_vec.nit))
+    print("Number of iterations: " + str(op_vec.nit))
     op_traj, op_freq = vec2traj(op_vec.x, dim)
 
-    # print("Period of orbit: " + str((2*np.pi)/op_freq))
-    # print("Global residual before: " + str(res_func(traj2vec(circle, freq))))
-    # print("Global residual after: " + str(res_func(traj2vec(op_traj, op_freq))))
-    # op_traj.plot(gradient = 16/64)
+    print("Period of orbit: " + str((2*np.pi)/op_freq))
+    print("Global residual before: " + str(res_func(traj2vec(circle, freq))))
+    print("Global residual after: " + str(res_func(traj2vec(op_traj, op_freq))))
+    op_traj.plot(gradient = 1/4)
 
     # test jacbian is zero also
     # print(jac_func(traj2vec(circle, freq)))
