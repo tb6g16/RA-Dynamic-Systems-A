@@ -13,10 +13,12 @@ from test_cases import ellipse as elps
 from test_cases import van_der_pol as vpd
 from test_cases import viswanath as vis
 
+# Redo with properly random matrices
 class TestTraj2Vec(unittest.TestCase):
     
     def setUp(self):
-        self.traj1 = Trajectory(uc.x)
+        # self.traj1 = Trajectory(uc.x)
+        self.traj1 = Trajectory(np.random.rand(rand.randint(2, 2), rand.randint(4, 4)))
         self.traj2 = Trajectory(elps.x)
         self.freq1 = rand.uniform(-10, 10)
         self.freq2 = rand.uniform(-10, 10)
