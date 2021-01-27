@@ -30,23 +30,12 @@ def local_residual(traj, sys, freq, mean):
     # compute gradient of trajectory
     traj_grad = traj_funcs.traj_grad(traj)
 
-    # evaluate mean nonlinearity
-    # c = Trajectory(sys.response(mean)*np.ones(traj.shape))
-
-    # evaluate first order correction
-    # jac_mean = sys.jacobian(mean)
-    # jac_mean_traj_prod = jac_mean*traj
-
-    # evaluate nonlinear component
-    # nl_response = traj_funcs.traj_response(traj, sys.nl_factor)
-
     # evaluate system response at the states of the trajectory
     full_traj = Trajectory(traj.curve_array + mean)
     response = traj_funcs.traj_response(full_traj, sys.response)
 
     # compute and return local residual trajectory
     return (freq*traj_grad) - response
-    # return (freq*traj_grad) - c - (jac_mean @ traj) - nl_response
 
 def global_residual(traj, sys, freq, mean):
     """
