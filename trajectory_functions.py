@@ -6,6 +6,14 @@ import scipy.integrate as integ
 from Trajectory import Trajectory
 from System import System
 
+def swap_tf(object):
+    if hasattr(object, 'modes'):
+        return np.fft.irfft(object.modes, axis = 1)
+    elif type(object) == np.ndarray:
+        return np.fft.rfft(object, axis = 1)
+    else:
+        raise TypeError("Input is not of correct type!")
+
 def traj_grad(traj):
     """
         This function calculates the gradient vectors of a given trajectory and
@@ -22,51 +30,18 @@ def traj_grad(traj):
         grad: Trajectory object
             the gradient of the input trajectory
     """
-    # number of discretised time locations
-    time_disc = traj.shape[1]
-
-    # FFT along the time dimension
-    mode_array = np.fft.rfft(traj.curve_array, axis = 1)
+    # initialise array for new modes
+    new_modes = np.zeros(traj.shape, dtype = np.complex)
 
     # loop over time and multiply modes by modifiers
-    for k in range(time_disc//2):
-        mode_array[:, k] *= 1j*k
+    for k in range(traj.shape[1]):
+        new_modes[:, k] = 1j*k*traj.modes[:, k]
     
     # force zero mode if symmetric
-    if time_disc % 2 == 0:
-        mode_array[:, time_disc//2] = 0
-    
-    # IFFT to get discrete time gradients
-    return Trajectory(np.fft.irfft(mode_array, axis = 1))
+    if traj.shape[1] % 2 == 0:
+        new_modes[:, traj.shape[1]//2] = 0
 
-def average_over_s(traj):
-    """
-        This function calculates the average of a trajectory over its time
-        domain, for each dimension separately.
-
-        Parameters
-        ----------
-        traj: Trajectory object
-            the trajectory for which the integration will be taken
-        
-        Returns
-        -------
-        integ_vec: numpy array
-            a 1D numpy array (vector) containing the average of the trajectory
-            over s for each of its dimensions
-    """
-    # make trajectory truly periodic
-    integ_traj = np.concatenate((traj.curve_array, traj[:, 0:1]), axis = 1)
-    
-    # initialise vector to hold integration results
-    traj_disc = np.linspace(0, 2*np.pi, np.shape(integ_traj)[1])
-    integ_vec = np.zeros([traj.shape[0]])
-
-    # loop over each dimension to evaluate the integration
-    for i in range(np.shape(integ_traj)[0]):
-        integ_vec[i] = (1/(2*np.pi))*integ.trapz(integ_traj[i, :], traj_disc)
-    
-    return integ_vec
+    return Trajectory(new_modes)
 
 def traj_inner_prod(traj1, traj2):
     """
@@ -86,17 +61,19 @@ def traj_inner_prod(traj1, traj2):
             the inner product of the two trajectories at each location along
             their domains, s
     """
-    # number of time locations
-    disc_size = traj1.shape[1]
+    # convert to time domain
+    curve1 = swap_tf(traj1)
+    curve2 = swap_tf(traj2)
 
-    # initialise output array
-    product_array = np.zeros([1, disc_size])
+    # initialise new array
+    prod_curve = np.zeros([1, np.shape(curve1)[1]])
 
-    # calculate inner product at each location s
-    for i in range(disc_size):
-        product_array[0, i] = np.dot(traj1[:, i], traj2[:, i])
-    
-    return Trajectory(product_array)
+    # evaluate inner product in time domain
+    for i in range(np.shape(curve1)[1]):
+        prod_curve[:, i] = np.dot(curve1[:, i], curve2[:, i])
+
+    # convert back to frequency domain and return
+    return Trajectory(swap_tf(prod_curve))
 
 def traj_response(traj, func):
     """
@@ -118,15 +95,15 @@ def traj_response(traj, func):
             the response at each location of the trajectory, given as an
             instance of the Trajectory class
     """
-    # initialise arrays
-    array_size = traj.shape
-    response_array = np.zeros(array_size)
-    
-    # evaluate response
-    for i in range(array_size[1]):
-        response_array[:, i] = func(traj[:, i])
-    
-    return Trajectory(response_array)
+    # convert trajectory to time domain
+    curve = swap_tf(traj)
+
+    # evaluate response in time domain
+    for i in range(np.shape(curve)[1]):
+        curve[:, i] = func(curve[:, i])
+
+    # convert back to frequency domain and return
+    return Trajectory(swap_tf(curve))
 
 def jacob_init(traj, sys, if_transp = False):
     """
@@ -164,17 +141,20 @@ def jacob_init(traj, sys, if_transp = False):
                 the 2D numpy array for the jacobian of a dynamical system given
                 at a specified location of the trajectory
         """
+        # convert to time domain
+        curve = swap_tf(traj)
+        
         # test for input
         if i%1 != 0:
             raise TypeError("Inputs are not of the correct type!")
-        if i >= traj.shape[1]:
+        if i >= np.shape(curve)[1]:
             raise ValueError("Input index is too large!")
 
         # make sure index is integer
         i = int(i)
 
         # state at index
-        state = traj[:, i]
+        state = curve[:, i]
 
         # the jocobian for that state
         if if_transp == True:

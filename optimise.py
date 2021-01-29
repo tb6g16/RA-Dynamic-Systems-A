@@ -26,7 +26,7 @@ def init_opt_funcs(sys, dim, mean):
         traj, freq = vec2traj(opt_vector, dim)
 
         # calculate global residual and return
-        return res_funcs.global_residual(traj, sys, freq, mean)
+        return res_funcs.global_residual(traj, sys, freq, mean, with_zero = True)
 
     def traj_global_res_jac(opt_vector):
         """
@@ -45,60 +45,6 @@ def init_opt_funcs(sys, dim, mean):
     
     return traj_global_res, traj_global_res_jac
 
-def init_constraints(sys, dim, mean):
-    """
-        This function intialises the nonlinear constraints imposed on the
-        optimisation, and returns the instance of the NonlinearConstraint class
-        that is passed as an argument to the optimisation.
-    """
-    def constraints(opt_vector):
-        """
-            This function is the input to the NonlinearConstraint class to
-            intialise it.
-        """
-        # unpack trajectory
-        traj, _ = vec2traj(opt_vector, dim)
-
-        # evaluate mean constraint
-        con1 = traj_funcs.average_over_s(traj)
-
-        # evaluate nonlinear constraint (RANS)
-        nl_fluc = traj_funcs.traj_response(traj, sys.nl_factor)
-        nl_fluc_av = traj_funcs.average_over_s(nl_fluc)
-        con2 = np.squeeze(sys.response(mean)) + nl_fluc_av
-
-        # combine and return
-        return np.concatenate((con1, con2), axis = 0)
-
-    def constraints_grad(opt_vector):
-        """
-            This function calculate the gradients of the constraint functionals
-            at the given trajectory and frequency (vector).
-        """
-        # unpack trajectory
-        traj, _ = vec2traj(opt_vector, dim)
-
-        # define jacobian matrix
-        jac = np.zeros([2*dim, (dim*traj.shape[1]) + 1])
-
-        # first constraint gradients
-        for i in range(dim):
-            con1i_traj_grad = Trajectory(np.zeros([dim, traj.shape[1]]))
-            con1i_traj_grad[i, :] = 1/(2*np.pi)
-            con1i_grad_vec = traj2vec(con1i_traj_grad, 0)
-            jac[i, :] = con1i_grad_vec
-
-        # second constraint gradients
-        for i in range(dim):
-            con2i_traj_grad_func = sys.nl_con_grads[i]
-            con2i_traj_grad = traj_funcs.traj_response(traj, con2i_traj_grad_func)
-            con2i_grad_vec = traj2vec(con2i_traj_grad, 0)
-            jac[i + dim, :] = con2i_grad_vec
-        
-        return jac
-
-    return constraints, constraints_grad
-
 if __name__ == "__main__":
     from test_cases import unit_circle as uc
     from test_cases import van_der_pol as vpd
@@ -108,19 +54,14 @@ if __name__ == "__main__":
     sys.parameters['mu'] = 2
     # sys = System(vis)
     # sys.parameters['mu'] = 1
-    circle = 2*Trajectory(uc.x, disc = 128)
+    circle = 2*Trajectory(uc.x, modes = 65)
     freq = 1
     dim = 2
 
-    res_func, jac_func = init_opt_funcs(sys, dim, np.zeros([2, 1]))
-    cons, cons_grad = init_constraints(sys, dim, np.zeros([2, 1]))
-    constraints = {'type': 'eq', 'fun': cons, 'jac': cons_grad}
-    # constraint = opt.NonlinearConstraint(cons, np.zeros(2*dim), np.zeros(2*dim), jac = cons_grad)
-    # constraint = opt.NonlinearConstraint(cons, np.zeros(2*dim), np.zeros(2*dim))
-    # print(cons(traj2vec(circle, freq)))
+    res_func, jac_func = init_opt_funcs(sys, dim, np.zeros(2))
 
     op_vec = opt.minimize(res_func, traj2vec(circle, freq), jac = jac_func, method = 'L-BFGS-B')
-    # op_vec = opt.minimize(res_func, traj2vec(circle, freq), jac = jac_func, constraints = constraints)
+    # op_vec = opt.minimize(res_func, traj2vec(circle, freq), method = 'L-BFGS-B')
 
     print(op_vec.message)
     print("Number of iterations: " + str(op_vec.nit))
@@ -131,6 +72,5 @@ if __name__ == "__main__":
     print("Global residual after: " + str(res_func(traj2vec(op_traj, op_freq))))
     op_traj.plot(gradient = 1/4)
 
-    # test jacbian is zero also
-    # print(jac_func(traj2vec(circle, freq)))
-    # print(jac_func(traj2vec(op_traj, op_freq)))
+    print("Trajectory zero mode: " + str(op_traj[:, 0]))
+    print("Local residual zero mode: " + str(res_funcs.local_residual(op_traj, sys, op_freq, np.zeros(2))[:, 0]))

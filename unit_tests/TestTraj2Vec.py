@@ -17,7 +17,9 @@ from test_cases import viswanath as vis
 class TestTraj2Vec(unittest.TestCase):
     
     def setUp(self):
-        self.traj = Trajectory(np.random.rand(rand.randint(1, 5), rand.randint(1, 256)))
+        temp = np.random.rand(rand.randint(1, 5), rand.randint(1, 256))
+        temp[:, 0] = 0
+        self.traj = Trajectory(temp)
         self.freq = rand.uniform(-10, 10)
         self.vec = t2v.traj2vec(self.traj, self.freq)
 
@@ -28,7 +30,7 @@ class TestTraj2Vec(unittest.TestCase):
 
     def test_traj2vec(self):
         # correct size
-        dofs = (self.traj.shape[0]*self.traj.shape[1]) + 1
+        dofs = (2*self.traj.shape[0]*(self.traj.shape[1] - 1)) + 1
         self.assertEqual(np.shape(self.vec), (dofs,))
 
         # last element always frequency
@@ -36,14 +38,17 @@ class TestTraj2Vec(unittest.TestCase):
 
         # correct values
         vec_true = np.zeros(dofs)
-        a = self.traj.shape[0]
+        a = 2*self.traj.shape[0]
         for i in range(dofs - 1):
             if i % a == 0:
                 b = 0
             for j in range(a):
                 if (i - j) % a == 0:
-                    vec_true[i] = self.traj[b, int((i - j)/a)]
-                    b += 1
+                    if i % 2 == 0:
+                        vec_true[i] = np.real(self.traj[b, 1 + int((i - j)/a)])
+                    elif i % 2 == 1:
+                        vec_true[i] = np.imag(self.traj[b, 1 + int((i - j)/a)])
+                        b += 1
         vec_true[-1] = self.freq
         self.assertTrue(np.array_equal(self.vec, vec_true))
 

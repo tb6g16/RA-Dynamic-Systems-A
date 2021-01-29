@@ -28,16 +28,20 @@ def local_residual(traj, sys, freq, mean):
             system, given as an instance of the Trajectory class
     """
     # compute gradient of trajectory
-    traj_grad = traj_funcs.traj_grad(traj)
+    grad = traj_funcs.traj_grad(traj)
+    grad_time = traj_funcs.swap_tf(grad)
 
     # evaluate system response at the states of the trajectory
-    full_traj = Trajectory(traj.curve_array + mean)
+    full_traj = traj
+    full_traj[:, 0] = mean
     response = traj_funcs.traj_response(full_traj, sys.response)
+    response_time = traj_funcs.swap_tf(response)
 
-    # compute and return local residual trajectory
-    return (freq*traj_grad) - response
+    # evaluate local residual, convert to frequency domain and return
+    return Trajectory(traj_funcs.swap_tf((freq*grad_time) - response_time))
 
-def global_residual(traj, sys, freq, mean):
+# ADD ON ZERO MODE OF RESIDUAL???
+def global_residual(traj, sys, freq, mean, with_zero = False):
     """
         This function calculates the global residual of a trajectory through a
         state-space defined by a given dynamical system.
@@ -60,10 +64,15 @@ def global_residual(traj, sys, freq, mean):
     local_res = local_residual(traj, sys, freq, mean)
 
     # take norm of the local residual vectors
-    local_res_norm_sq = traj_funcs.traj_inner_prod(local_res, local_res)
+    if with_zero == True:
+        local_res_norm_sq = traj_funcs.traj_inner_prod(local_res, local_res)
+    else:
+        local_res_zero = local_res
+        local_res_zero[:, 0] = 0
+        local_res_norm_sq = traj_funcs.traj_inner_prod(local_res_zero, local_res_zero)
 
     # integrate over the discretised time
-    return 0.5*traj_funcs.average_over_s(local_res_norm_sq)[0]
+    return 0.5*np.real(local_res_norm_sq[0, 0])/(2*(traj.shape[1] - 1))
 
 def global_residual_grad(traj, sys, freq, mean):
     """
@@ -88,26 +97,36 @@ def global_residual_grad(traj, sys, freq, mean):
         d_gr_wrt_freq: float
             the gradient of the global residual with respect to the trajectory
     """
-    # calculate local residual trajectory
-    local_res = local_residual(traj, sys, freq, mean)
+    # calculate residual and gradient
+    lr = local_residual(traj, sys, freq, mean)
+    lr_grad = traj_funcs.traj_grad(lr)
 
-    # calculate trajectory gradients
+    # perform multiplication with system jacobian (transpose)
+    jac_transp = traj_funcs.jacob_init(traj, sys, if_transp = True)
+    jac_lr_prod = jac_transp @ lr
+
+    # convert to time domain
+    lr_grad_time = traj_funcs.swap_tf(lr_grad)
+    jac_lr_prod_time = traj_funcs.swap_tf(jac_lr_prod)
+
+    # evaluate gradient w.r.t trajectory in time domain
+    gr_traj_grad_time = -(freq*lr_grad_time) - jac_lr_prod_time
+
+    # convert to frequency domain
+    gr_traj_grad = Trajectory(traj_funcs.swap_tf(gr_traj_grad_time))
+
+    # square norm of gradient of trajectory
     traj_grad = traj_funcs.traj_grad(traj)
-    res_grad = traj_funcs.traj_grad(local_res)
-
-    # initialise jacobian function
-    jacob_func = traj_funcs.jacob_init(traj, sys, if_transp = True)
-
-    # take norm of trajectory
     traj_grad_norm_sq = traj_funcs.traj_inner_prod(traj_grad, traj_grad)
 
-    # take response of trajectory to dynamical system
-    traj_resp = traj_funcs.traj_response(traj, sys.response)
+    # response of full trajectory to system and inner product with trajectory gradient
+    full_traj = traj
+    full_traj[:, 0] = mean
+    traj_resp = traj_funcs.traj_response(full_traj, sys.response)
+    traj_grad_sys_prod = traj_funcs.traj_inner_prod(traj_grad, traj_resp)
 
-    # define integrand trajectory to be integrated
-    int_traj = (freq*traj_grad_norm_sq) - \
-        (traj_funcs.traj_inner_prod(traj_grad, traj_resp))
+    # combine into full "integrand"
+    gr_freq_grad = np.real((freq*traj_grad_norm_sq[0, 0]) - traj_grad_sys_prod[0, 0])
 
-    # calculate and return gradients w.r.t trajectory and frequency respectively
-    return ((-freq*res_grad) - (jacob_func @ local_res))*(1/(40*np.pi)), \
-        traj_funcs.average_over_s(int_traj)[0]
+    # return and don't forget to normalise zero mode
+    return gr_traj_grad*(1/(40*np.pi)), gr_freq_grad/(2*(traj.shape[1] - 1))

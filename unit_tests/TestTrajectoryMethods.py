@@ -1,5 +1,5 @@
 # This file contains the tests for the Trajectory class and its associated
-# methods
+# methods.
 
 import sys
 sys.path.append(r"C:\Users\user\Desktop\PhD\Bruno Paper\Code\Approach A")
@@ -17,10 +17,10 @@ from test_cases import viswanath as vis
 class TestTrajectoryMethods(unittest.TestCase):
     
     def setUp(self):
-        self.traj1 = Trajectory(uc.x, disc = 64)
-        self.freq1 = 1
-        self.traj2 = Trajectory(elps.x, disc = 64)
-        self.freq2 = 1
+        self.traj1 = Trajectory(uc.x, modes = 33)
+        self.freq1 = rand.uniform(-10, 10)
+        self.traj2 = Trajectory(elps.x, modes = 33)
+        self.freq2 = rand.uniform(-10, 10)
         self.sys1 = System(vpd)
         self.sys2 = System(vis)
 
@@ -100,21 +100,27 @@ class TestTrajectoryMethods(unittest.TestCase):
 
         # outputs are real numbers
         temp = True
-        if matmul_t1s1.curve_array.dtype != np.int64 and matmul_t1s1.curve_array.dtype != np.float64:
+        if matmul_t1s1.modes.dtype != np.complex128:
             temp = False
-        if matmul_t2s1.curve_array.dtype != np.int64 and matmul_t2s1.curve_array.dtype != np.float64:
+        if matmul_t2s1.modes.dtype != np.complex128:
             temp = False
-        if matmul_t1s2.curve_array.dtype != np.int64 and matmul_t1s2.curve_array.dtype != np.float64:
+        if matmul_t1s2.modes.dtype != np.complex128:
             temp = False
-        if matmul_t2s2.curve_array.dtype != np.int64 and matmul_t2s2.curve_array.dtype != np.float64:
+        if matmul_t2s2.modes.dtype != np.complex128:
             temp = False
         self.assertTrue(temp)
 
         # correct values at random vector
-        self.assertTrue(np.allclose(matmul_t1s1[:, rind_t1s1], mat_func_t1s1(rind_t1s1) @ self.traj1[:, rind_t1s1]))
-        self.assertTrue(np.allclose(matmul_t2s1[:, rind_t2s1], mat_func_t2s1(rind_t2s1) @ self.traj2[:, rind_t2s1]))
-        self.assertTrue(np.allclose(matmul_t1s2[:, rind_t1s2], mat_func_t1s2(rind_t1s2) @ self.traj1[:, rind_t1s2]))
-        self.assertTrue(np.allclose(matmul_t2s2[:, rind_t2s2], mat_func_t2s2(rind_t2s2) @ self.traj2[:, rind_t2s2]))
+        curve_traj1 = traj_funcs.swap_tf(self.traj1)
+        curve_traj2 = traj_funcs.swap_tf(self.traj2)
+        matmul_t1s1_curve = traj_funcs.swap_tf(matmul_t1s1)
+        matmul_t2s1_curve = traj_funcs.swap_tf(matmul_t2s1)
+        matmul_t1s2_curve = traj_funcs.swap_tf(matmul_t1s2)
+        matmul_t2s2_curve = traj_funcs.swap_tf(matmul_t2s2)
+        self.assertTrue(np.allclose(matmul_t1s1_curve[:, rind_t1s1], mat_func_t1s1(rind_t1s1) @ curve_traj1[:, rind_t1s1]))
+        self.assertTrue(np.allclose(matmul_t2s1_curve[:, rind_t2s1], mat_func_t2s1(rind_t2s1) @ curve_traj2[:, rind_t2s1]))
+        self.assertTrue(np.allclose(matmul_t1s2_curve[:, rind_t1s2], mat_func_t1s2(rind_t1s2) @ curve_traj1[:, rind_t1s2]))
+        self.assertTrue(np.allclose(matmul_t2s2_curve[:, rind_t2s2], mat_func_t2s2(rind_t2s2) @ curve_traj2[:, rind_t2s2]))
 
     def test_eq(self):
         self.assertTrue(self.traj1 + self.traj1 == 2*self.traj1)
