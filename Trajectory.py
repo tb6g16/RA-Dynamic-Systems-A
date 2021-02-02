@@ -135,7 +135,7 @@ class Trajectory:
         i, j = key
         self.modes[i, j] = value
 
-    def plot(self, gradient = None):
+    def plot(self, gradient = None, title = None):
         """
             This function is a placeholder and will be used for plotting
             purposes.
@@ -164,6 +164,19 @@ class Trajectory:
             # plt.xlim([-2.2, 2.2])
             # plt.ylim([-4, 4])
             # plt.grid()
+            plt.show()
+
+        elif self.shape[0] == 3:
+            # convert to time domain
+            curve = traj_funcs.swap_tf(self)
+
+            # plotting trajectory
+            fig = plt.figure()
+            ax = fig.gca(projection = "3d")
+            ax.plot(np.append(curve[0], curve[0, 0]), np.append(curve[1], curve[1, 0]), np.append(curve[2], curve[2, 0]))
+            # ax.set_aspect('equal')
+            ax.set_xlabel('x'), ax.set_ylabel('y'), ax.set_zlabel('z')
+            fig.suptitle(title)
             plt.show()
         else:
             raise ValueError("Can't plot!")

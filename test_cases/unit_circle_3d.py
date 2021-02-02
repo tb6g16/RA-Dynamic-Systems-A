@@ -7,7 +7,7 @@ import numpy as np
 def x(s):
 
     # initialise vectors
-    state = np.zeros(2)
+    state = np.zeros(3)
 
     # define function behaviour
     state[0] = np.cos(s)

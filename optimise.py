@@ -4,7 +4,6 @@
 
 import numpy as np
 import scipy.optimize as opt
-import scipy.integrate as integ
 from Trajectory import Trajectory
 from System import System
 from traj2vec import traj2vec, vec2traj

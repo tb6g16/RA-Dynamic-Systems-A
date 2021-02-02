@@ -1,15 +1,12 @@
 # This file contains the functions defining the dynamical system of the Van der
-# Pol equations, the proposed solution curve, and the real solution (limit
-# cycle).
-
-# Thomas Burton - October 2020
+# Pol equations.
 
 import numpy as np
 
-# define optional arguments
-defaults = {'mu': 0}
+# define parameters
+parameters = {'mu': 0}
 
-def response(x, defaults = defaults):
+def response(x, defaults = parameters):
 
     # unpack defaults
     mu = defaults['mu']
@@ -23,22 +20,22 @@ def response(x, defaults = defaults):
 
     return response
 
-def jacobian(x, defaults = defaults):
+def jacobian(x, defaults = parameters):
 
     # unpack defaults
     mu = defaults['mu']
 
     #initialise jacobian matrix
-    jacobian_matrix = np.zeros([np.shape(x)[0], np.shape(x)[0]])
+    jacobian = np.zeros([np.shape(x)[0], np.shape(x)[0]])
 
     # compute jacobian elements
-    jacobian_matrix[0, 1] = 1
-    jacobian_matrix[1, 0] = -(2*mu*x[0]*x[1]) - 1
-    jacobian_matrix[1, 1] = mu*(1 - (x[0] ** 2))
+    jacobian[0, 1] = 1
+    jacobian[1, 0] = -(2*mu*x[0]*x[1]) - 1
+    jacobian[1, 1] = mu*(1 - (x[0] ** 2))
 
-    return jacobian_matrix
+    return jacobian
 
-def nl_factor(x, defaults = defaults):
+def nl_factor(x, defaults = parameters):
 
     # unpack defualts
     mu = defaults['mu']
@@ -54,10 +51,10 @@ def nl_factor(x, defaults = defaults):
 # these functions are here because the system has non-quadratic nonlinearity
 def init_nl_con_grads():
 
-    def nl_con_grad1(x, defaults = defaults):
+    def nl_con_grad1(x, defaults = parameters):
         return np.zeros(2)
 
-    def nl_con_grad2(x, defaults = defaults):
+    def nl_con_grad2(x, defaults = parameters):
         mu = defaults['mu']
         vec = np.zeros(2)
         vec[0] = -mu*x[0]*x[1]/np.pi
