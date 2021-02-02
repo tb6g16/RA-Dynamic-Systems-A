@@ -46,8 +46,8 @@ class System:
         self.jacobian = function_file.jacobian
         self.nl_factor = function_file.nl_factor
         self.nl_con_grads = function_file.init_nl_con_grads()
-        if 'defaults' in dir(function_file):
-            self.parameters = function_file.defaults
+        if 'parameters' in dir(function_file):
+            self.parameters = function_file.parameters
         else:
             self.parameters = {}
 

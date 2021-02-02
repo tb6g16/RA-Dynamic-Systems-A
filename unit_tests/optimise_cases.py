@@ -30,8 +30,8 @@ a = 0
 m = 1.2
 freq = 1
 dim = 2
-mean = np.zeros([2, 1])
-circle = 2*Trajectory(uc.x, disc = 128)
+mean = np.zeros(2)
+circle = 2*Trajectory(uc.x, modes = 65)
 # circle_almost = circle.curve_array
 # circle_almost[n, i] = m*circle.curve_array[n, i] + a
 # circle_almost = Trajectory(circle_almost)
@@ -39,7 +39,6 @@ sys = System(vpd)
 sys.parameters['mu'] = 2
 
 res_func, jac_func = my_opt.init_opt_funcs(sys, dim, mean)
-constraints = my_opt.init_constraints(sys, dim, mean)
 
 op_vec = opt.minimize(res_func, traj2vec(circle, freq), jac = jac_func, method = 'L-BFGS-B', callback = callback)
 print(op_vec.message)
@@ -51,15 +50,15 @@ print("Period of orbit: " + str((2*np.pi)/op_freq))
 print("Global residual before: " + str(res_func(traj2vec(circle, freq))))
 print("Global residual after: " + str(res_func(traj2vec(op_traj, op_freq))))
 
-# traj_trace.insert(0, circle)
-# for i in range(op_vec.nit):
-#     fname = "vpd_convergence_it" + str(i) + ".jpg"
-#     traj_trace[i].plot(gradient = 1/4)
-#     plt.savefig(r'C:\Users\user\Desktop\PhD\Misc\Presenting your Research\Figures\vpd' + '\\' + fname, bbox_inches='tight')
-#     plt.close()
+traj_trace.insert(0, circle)
+for i in range(op_vec.nit):
+    fname = "vpd_convergence_it" + str(i) + ".jpg"
+    traj_trace[i].plot(gradient = 1/4)
+    plt.savefig(r'C:\Users\user\Desktop\temp' + '\\' + fname, bbox_inches='tight')
+    plt.close()
 
 # circle_almost.plot(gradient = True, gradient_density = 32/256)
-# op_traj.plot(gradient = 16/64)
+op_traj.plot(gradient = 1/4)
 
 # plt.figure()
 # plt.plot(res_trace)

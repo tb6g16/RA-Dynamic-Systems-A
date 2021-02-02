@@ -3,10 +3,10 @@
 
 import numpy as np
 
-# define optional arguments
-defaults = {'mu': 0, 'r': 1}
+# define parameters
+parameters = {'mu': 0, 'r': 1}
 
-def response(x, defaults = defaults):
+def response(x, defaults = parameters):
     
     # unpack default arguments
     mu = defaults['mu']
@@ -21,7 +21,7 @@ def response(x, defaults = defaults):
 
     return response
 
-def jacobian(x, defaults = defaults):
+def jacobian(x, defaults = parameters):
     
     # unpack defaults
     mu = defaults['mu']
@@ -39,7 +39,7 @@ def jacobian(x, defaults = defaults):
 
     return jacobian
 
-def nl_factor(x, defaults = defaults):
+def nl_factor(x, defaults = parameters):
     
     # unpack defualts
     mu = defaults['mu']
@@ -57,7 +57,7 @@ def nl_factor(x, defaults = defaults):
 # these functions are here because the system has non-quadratic nonlinearity
 def init_nl_con_grads():
 
-    def nl_con_grad1(x, defaults = defaults):
+    def nl_con_grad1(x, defaults = parameters):
         mu = defaults['mu']
         vec = np.zeros(2)
         r = np.sqrt((x[0]**2) + (x[1]**2))
@@ -65,7 +65,7 @@ def init_nl_con_grads():
         vec[1] = (-mu/(2*np.pi*r))*(x[0]*x[1])
         return vec
 
-    def nl_con_grad2(x, defaults = defaults):
+    def nl_con_grad2(x, defaults = parameters):
         mu = defaults['mu']
         vec = np.zeros(2)
         r = np.sqrt((x[0]**2) + (x[1]**2))
