@@ -135,7 +135,8 @@ class Trajectory:
         i, j = key
         self.modes[i, j] = value
 
-    def plot(self, gradient = None, title = None, time_disc = None):
+    # TIME FOR **KWARGS???
+    def plot(self, gradient = None, title = None, time_disc = None, mean = None):
         """
             This function is a placeholder and will be used for plotting
             purposes.
@@ -158,6 +159,10 @@ class Trajectory:
         else:
             modes_padded = self.modes
             grad_padded = grad.modes
+
+        # adding in mean
+        if type(mean) == np.ndarray:
+            modes_padded[:, 0] = mean*(2*(np.shape(modes_padded)[1] - 1))
 
         # convert to time domain
         curve = np.fft.irfft(modes_padded, axis = 1)
@@ -207,4 +212,4 @@ if __name__ == '__main__':
     unit_circle3.plot(gradient = 1, time_disc = 16)
     
     ellipse = Trajectory(elps.x)
-    ellipse.plot(gradient = 1/4)
+    ellipse.plot(gradient = 1/4, mean = np.ones(2))

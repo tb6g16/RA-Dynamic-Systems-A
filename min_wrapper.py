@@ -33,9 +33,6 @@ def my_min(traj, sys, freq, mean, **kwargs):
         cur_traj, cur_freq = vec2traj(x, dim)
         cur_gr = res_func(x)
 
-        # print("-----------------------------------")
-        # print("Global residual: " + str(cur_gr))
-
         traj_trace.append(cur_traj)
         freq_trace.append(cur_freq)
         lr_trace.append(local_residual(cur_traj, sys, cur_freq, mean))
