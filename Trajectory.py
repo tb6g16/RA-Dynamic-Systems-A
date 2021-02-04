@@ -135,17 +135,35 @@ class Trajectory:
         i, j = key
         self.modes[i, j] = value
 
-    def plot(self, gradient = None, title = None):
+    def plot(self, gradient = None, title = None, time_disc = None):
         """
             This function is a placeholder and will be used for plotting
             purposes.
         """
         import trajectory_functions as traj_funcs
-        
+
+        # calcualte gradient
+        grad = traj_funcs.traj_grad(self)
+
+        # pad with zeros to increase resolution
+        if time_disc != None:
+            tot_modes = int(time_disc/2) + 1
+            pad_len = tot_modes - self.shape[1]
+            if pad_len >= 0:
+                modes_padded = np.pad(self.modes, ((0, 0), (0, pad_len)), 'constant')
+                grad_padded = np.pad(grad.modes, ((0, 0), (0, pad_len)), 'constant')
+            else:
+                modes_padded = self.modes[:, 0:(tot_modes + 1)]
+                grad_padded = grad.modes[:, 0:(tot_modes + 1)]
+        else:
+            modes_padded = self.modes
+            grad_padded = grad.modes
+
+        # convert to time domain
+        curve = np.fft.irfft(modes_padded, axis = 1)
+        grad = np.fft.irfft(grad_padded, axis = 1)
+
         if self.shape[0] == 2:
-            # convert to time domain
-            curve = traj_funcs.swap_tf(self)
-            
             # plotting trajectory
             fig = plt.figure()
             ax = fig.gca()
@@ -154,8 +172,6 @@ class Trajectory:
 
             # add gradient
             if gradient != None:
-                grad = traj_funcs.traj_grad(self)
-                grad = traj_funcs.swap_tf(grad)
                 for i in range(0, curve.shape[1], int(1/gradient)):
                     ax.quiver(curve[0, i], curve[1, i], grad[0, i], grad[1, i])
             
@@ -167,9 +183,6 @@ class Trajectory:
             plt.show()
 
         elif self.shape[0] == 3:
-            # convert to time domain
-            curve = traj_funcs.swap_tf(self)
-
             # plotting trajectory
             fig = plt.figure()
             ax = fig.gca(projection = "3d")
@@ -190,8 +203,8 @@ if __name__ == '__main__':
 
     unit_circle3 = np.pi*unit_circle1 + unit_circle2
 
-    unit_circle1.plot(gradient = 16/64)
-    unit_circle3.plot(gradient = 16/64)
+    unit_circle1.plot(gradient = 1/4)
+    unit_circle3.plot(gradient = 1, time_disc = 16)
     
     ellipse = Trajectory(elps.x)
-    ellipse.plot(gradient = 16/64)
+    ellipse.plot(gradient = 1/4)

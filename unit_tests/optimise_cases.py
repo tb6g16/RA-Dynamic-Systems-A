@@ -50,12 +50,12 @@ print("Period of orbit: " + str((2*np.pi)/op_freq))
 print("Global residual before: " + str(res_func(traj2vec(circle, freq))))
 print("Global residual after: " + str(res_func(traj2vec(op_traj, op_freq))))
 
-traj_trace.insert(0, circle)
-for i in range(op_vec.nit):
-    fname = "vpd_convergence_it" + str(i) + ".jpg"
-    traj_trace[i].plot(gradient = 1/4)
-    plt.savefig(r'C:\Users\user\Desktop\temp' + '\\' + fname, bbox_inches='tight')
-    plt.close()
+# traj_trace.insert(0, circle)
+# for i in range(op_vec.nit):
+#     fname = "vpd_convergence_it" + str(i) + ".jpg"
+#     traj_trace[i].plot(gradient = 1/4)
+#     plt.savefig(r'C:\Users\user\Desktop\temp' + '\\' + fname, bbox_inches='tight')
+#     plt.close()
 
 # circle_almost.plot(gradient = True, gradient_density = 32/256)
 op_traj.plot(gradient = 1/4)
