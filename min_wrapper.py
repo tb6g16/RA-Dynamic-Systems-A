@@ -54,7 +54,11 @@ def my_min(traj, sys, freq, mean, **kwargs):
     # pack traces into a dictionary
     traces = {'traj': traj_trace, 'freq': freq_trace, 'lr': lr_trace, 'gr': gr_trace, 'gr_grad': gr_grad_trace}
 
-    return sol, traces
+    # unpack trajectory from solution
+    op_vec = sol.x
+    op_traj, op_freq = vec2traj(op_vec, dim)
+
+    return op_traj, op_freq, traces, sol
 
 if __name__ == "__main__":
     import numpy as np
@@ -69,7 +73,7 @@ if __name__ == "__main__":
     freq = 1
     mean = np.zeros(2)
 
-    sol, traces = my_min(traj, sys, freq, mean)
+    op_traj, op_freq, traces, sol = my_min(traj, sys, freq, mean)
 
     print(sol.message)
     op_traj, op_freq = vec2traj(sol.x, 2)

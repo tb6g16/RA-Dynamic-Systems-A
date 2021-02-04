@@ -135,13 +135,20 @@ class Trajectory:
         i, j = key
         self.modes[i, j] = value
 
-    # TIME FOR **KWARGS???
-    def plot(self, gradient = None, title = None, time_disc = None, mean = None):
+# ADD PROJECTION OF 3D TRAJECTORIES INTO 2D PLANE
+    def plot(self, **kwargs):
         """
             This function is a placeholder and will be used for plotting
             purposes.
         """
         import trajectory_functions as traj_funcs
+
+        # unpack keyword arguments
+        gradient = kwargs.get('gradient', None)
+        title = kwargs.get('title', None)
+        time_disc = kwargs.get('disc', None)
+        mean = kwargs.get('mean', None)
+        show = kwargs.get('show', True)
 
         # calcualte gradient
         grad = traj_funcs.traj_grad(self)
@@ -185,7 +192,6 @@ class Trajectory:
             # plt.xlim([-2.2, 2.2])
             # plt.ylim([-4, 4])
             # plt.grid()
-            plt.show()
 
         elif self.shape[0] == 3:
             # plotting trajectory
@@ -195,9 +201,11 @@ class Trajectory:
             # ax.set_aspect('equal')
             ax.set_xlabel('x'), ax.set_ylabel('y'), ax.set_zlabel('z')
             fig.suptitle(title)
-            plt.show()
         else:
             raise ValueError("Can't plot!")
+
+        if show == True:
+            plt.show()
 
 if __name__ == '__main__':
     from test_cases import unit_circle as circ

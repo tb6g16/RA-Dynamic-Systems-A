@@ -1,22 +1,18 @@
 # This file is here for initial tests of whether the code can solve the Lorenz
 # system.
 
-import sys
-sys.path.append(r"C:\Users\user\Desktop\PhD\Bruno Paper\Code\Approach A")
 import numpy as np
 import random as rand
 from Trajectory import Trajectory
 from System import System
 from traj2vec import traj2vec, vec2traj
 import trajectory_functions as traj_funcs
-import residual_functions as res_funcs
-import optimise as opt
-from scipy.optimize import minimize
+import matplotlib.pyplot as plt
+from min_wrapper import my_min
 from test_cases import lorenz
 from test_cases import unit_circle_3d as uc3
 
 # define parameters and system
-dim = 3
 mean = np.zeros(3)
 mean[2] = 25.55
 sys = System(lorenz)
@@ -25,7 +21,8 @@ sys = System(lorenz)
 init_traj = np.random.rand(3, 520)
 init_traj = traj_funcs.swap_tf(init_traj)
 init_traj = Trajectory(init_traj)
-modes = 261
+# modes = 250
+modes = 10
 init_traj = Trajectory(uc3.x, modes = modes)
 # for i in range(3):
 #     for j in range(modes):
@@ -33,27 +30,23 @@ init_traj = Trajectory(uc3.x, modes = modes)
 init_freq = (2*np.pi)/1.6
 init_traj_vec = traj2vec(init_traj, init_freq)
 
-# initialise optimisation functions
-res_func, jac_func = opt.init_opt_funcs(sys, dim, mean)
-
 # perform optimisation
-sol = minimize(res_func, init_traj_vec, jac = jac_func, method = 'L-BFGS-B')
+op_traj, op_freq, traces, sol = my_min(init_traj, sys, init_freq, mean)
 
-# unpack results
+# results
 print(sol.message)
-print("Number of iterations: " + str(sol.nit))
-op_traj, op_freq = vec2traj(sol.x, dim)
-# op_traj_full = op_traj
-# op_traj_full[:, 0] = mean*(2*(modes - 1))
-
 print("Period of orbit: " + str((2*np.pi)/op_freq))
-print("Global residual before: " + str(res_func(init_traj_vec)))
-print("Global residual after: " + str(res_func(traj2vec(op_traj, op_freq))))
-# op_traj.plot(gradient = 1/4)
-op_traj.plot(title = r"Guess: 3D UC (z = 0), Period: 1.6s -> 1.96s, GR: 361 -> 189")
-# op_traj.plot(title = r"Guess: 3D UC (z = 0) w\ noise, Period: 1.6s -> 3.39s, GR: 361 -> 29")
-# op_traj.plot(title = r"Guess: random time domain (inside unit spehere), Period: 1.6s -> 422s, GR: 39583 -> 18")
-# op_traj.plot(title = r"Guess: random frequency domain (inside unit spehere), Period: 1.6s -> 1.96s, GR: 361 -> 189")
+op_traj.plot(gradient = 1/4, disc = 1024, mean = mean)
+# plt.figure(1)
+# plt.plot(traces['gr'])
+# plt.show()
 
-print("Trajectory zero mode: " + str(op_traj[:, 0]))
-print("Local residual zero mode: " + str(res_funcs.local_residual(op_traj, sys, op_freq, np.zeros(3))[:, 0]))
+# lr_zero_mode = np.zeros([3, len(traces['lr'])])
+# for i in range(len(traces['lr'])):
+#     lr_zero_mode[:, i] = traces['lr'][i][:, 0]
+
+# _, (ax1, ax2, ax3) = plt.subplots(figsize = (12, 5), nrows = 3)
+# ax1.plot(lr_zero_mode[0, :])
+# ax2.plot(lr_zero_mode[1, :])
+# ax3.plot(lr_zero_mode[2, :])
+# plt.show()

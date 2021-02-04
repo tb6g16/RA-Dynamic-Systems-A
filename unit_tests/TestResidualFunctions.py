@@ -241,7 +241,6 @@ class TestResidualFunctions(unittest.TestCase):
         # Passes consistently with rtol, atol = 5e-1
         self.assertEqual(gr_grad_traj_traj2_sys2, gr_grad_traj_traj2_sys2_FD)
 
-        # TESTS WITH ELLIPSE FAIL
         self.assertAlmostEqual(gr_grad_freq_traj1_sys1, gr_grad_freq_traj1_sys1_FD, places = 6)
         self.assertAlmostEqual(gr_grad_freq_traj2_sys1, gr_grad_freq_traj2_sys1_FD, places = 6)
         self.assertAlmostEqual(gr_grad_freq_traj1_sys2, gr_grad_freq_traj1_sys2_FD, places = 6)
