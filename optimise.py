@@ -10,7 +10,7 @@ from traj2vec import traj2vec, vec2traj
 import trajectory_functions as traj_funcs
 import residual_functions as res_funcs
 
-def init_opt_funcs(sys, dim, mean):
+def init_opt_funcs(sys, dim, mean, with_zero = True):
     """
         This functions initialises the optimisation vectors for a specific
         system.
@@ -25,7 +25,7 @@ def init_opt_funcs(sys, dim, mean):
         traj, freq = vec2traj(opt_vector, dim)
 
         # calculate global residual and return
-        return res_funcs.global_residual(traj, sys, freq, mean, with_zero = True)
+        return res_funcs.global_residual(traj, sys, freq, mean, with_zero = with_zero)
 
     def traj_global_res_jac(opt_vector):
         """

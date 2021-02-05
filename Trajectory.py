@@ -135,7 +135,7 @@ class Trajectory:
         i, j = key
         self.modes[i, j] = value
 
-# ADD PROJECTION OF 3D TRAJECTORIES INTO 2D PLANE
+    # ADD PROJECTION OF 3D TRAJECTORIES INTO 2D PLANE
     def plot(self, **kwargs):
         """
             This function is a placeholder and will be used for plotting
