@@ -37,16 +37,16 @@ op_traj, op_freq, traces, sol = my_min(init_traj, sys, init_freq, mean)
 print(sol.message)
 print("Period of orbit: " + str((2*np.pi)/op_freq))
 op_traj.plot(gradient = 1/4, disc = 1024, mean = mean)
-plt.figure(1)
-plt.plot(traces['gr'])
-plt.show()
+# plt.figure(1)
+# plt.plot(traces['gr'])
+# plt.show()
 
-lr_zero_mode = np.zeros([3, len(traces['lr'])])
-for i in range(len(traces['lr'])):
-    lr_zero_mode[:, i] = traces['lr'][i][:, 0]
+# lr_zero_mode = np.zeros([3, len(traces['lr'])])
+# for i in range(len(traces['lr'])):
+#     lr_zero_mode[:, i] = traces['lr'][i][:, 0]
 
-_, (ax1, ax2, ax3) = plt.subplots(figsize = (12, 5), nrows = 3)
-ax1.plot(lr_zero_mode[0, :])
-ax2.plot(lr_zero_mode[1, :])
-ax3.plot(lr_zero_mode[2, :])
-plt.show()
+# _, (ax1, ax2, ax3) = plt.subplots(figsize = (12, 5), nrows = 3)
+# ax1.plot(lr_zero_mode[0, :])
+# ax2.plot(lr_zero_mode[1, :])
+# ax3.plot(lr_zero_mode[2, :])
+# plt.show()
