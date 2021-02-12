@@ -5,14 +5,15 @@ import numpy as np
 import scipy.integrate as integ
 from Trajectory import Trajectory
 from System import System
+from my_fft import my_fft, my_ifft
 
-def swap_tf(object):
-    if hasattr(object, 'modes'):
-        return np.fft.irfft(object.modes, axis = 1)
-    elif type(object) == np.ndarray:
-        return np.fft.rfft(object, axis = 1)
-    else:
-        raise TypeError("Input is not of correct type!")
+# def swap_tf(object):
+#     if hasattr(object, 'modes'):
+#         return np.fft.irfft(object.modes, axis = 1)
+#     elif type(object) == np.ndarray:
+#         return np.fft.rfft(object, axis = 1)
+#     else:
+#         raise TypeError("Input is not of correct type!")
 
 def traj_grad(traj):
     """
@@ -62,8 +63,10 @@ def traj_inner_prod(traj1, traj2):
             their domains, s
     """
     # convert to time domain
-    curve1 = swap_tf(traj1)
-    curve2 = swap_tf(traj2)
+    # curve1 = swap_tf(traj1)
+    # curve2 = swap_tf(traj2)
+    curve1 = my_ifft(traj1.modes)
+    curve2 = my_ifft(traj2.modes)
 
     # initialise new array
     prod_curve = np.zeros([1, np.shape(curve1)[1]])
@@ -73,7 +76,8 @@ def traj_inner_prod(traj1, traj2):
         prod_curve[:, i] = np.dot(curve1[:, i], curve2[:, i])
 
     # convert back to frequency domain and return
-    return Trajectory(swap_tf(prod_curve))
+    # return Trajectory(swap_tf(prod_curve))
+    return Trajectory(my_fft(prod_curve))
 
 def traj_response(traj, func):
     """
@@ -96,14 +100,16 @@ def traj_response(traj, func):
             instance of the Trajectory class
     """
     # convert trajectory to time domain
-    curve = swap_tf(traj)
+    # curve = swap_tf(traj)
+    curve = my_ifft(traj.modes)
 
     # evaluate response in time domain
     for i in range(np.shape(curve)[1]):
         curve[:, i] = func(curve[:, i])
 
     # convert back to frequency domain and return
-    return Trajectory(swap_tf(curve))
+    # return Trajectory(swap_tf(curve))
+    return Trajectory(my_fft(curve))
 
 def jacob_init(traj, sys, if_transp = False):
     """
@@ -142,7 +148,8 @@ def jacob_init(traj, sys, if_transp = False):
                 at a specified location of the trajectory
         """
         # convert to time domain
-        curve = swap_tf(traj)
+        # curve = swap_tf(traj)
+        curve = my_ifft(traj.modes)
         
         # test for input
         if i%1 != 0:

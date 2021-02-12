@@ -18,12 +18,12 @@ mean[2] = 25.55
 sys = System(lorenz)
 
 # define initial guess
-init_traj = np.random.rand(3, 520)
-init_traj = traj_funcs.swap_tf(init_traj)
-init_traj = Trajectory(init_traj)
-# modes = 250
 modes = 10
-init_traj = Trajectory(uc3.x, modes = modes)
+# init_traj = np.random.rand(3, modes)
+# init_traj = traj_funcs.swap_tf(init_traj)
+# init_traj = Trajectory(init_traj)
+# modes = 250
+init_traj = Trajectory(uc3.x, modes = modes)*2
 # for i in range(3):
 #     for j in range(modes):
 #         init_traj[i, j] = init_traj[i, j] + rand.uniform(-0.01, 0.01)
@@ -36,7 +36,7 @@ op_traj, op_freq, traces, sol = my_min(init_traj, sys, init_freq, mean)
 # results
 print(sol.message)
 print("Period of orbit: " + str((2*np.pi)/op_freq))
-op_traj.plot(gradient = 1/4, disc = 1024, mean = mean)
+op_traj.plot(gradient = 1/4, disc = 256, mean = mean)
 # plt.figure(1)
 # plt.plot(traces['gr'])
 # plt.show()
@@ -46,7 +46,7 @@ op_traj.plot(gradient = 1/4, disc = 1024, mean = mean)
 #     lr_zero_mode[:, i] = traces['lr'][i][:, 0]
 
 # _, (ax1, ax2, ax3) = plt.subplots(figsize = (12, 5), nrows = 3)
-# ax1.plot(lr_zero_mode[0, :])
-# ax2.plot(lr_zero_mode[1, :])
-# ax3.plot(lr_zero_mode[2, :])
+# ax1.plot(np.abs(lr_zero_mode[0, :]))
+# ax2.plot(np.abs(lr_zero_mode[1, :]))
+# ax3.plot(np.abs(lr_zero_mode[2, :]))
 # plt.show()

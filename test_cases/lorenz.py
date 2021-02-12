@@ -3,7 +3,8 @@
 import numpy as np
 
 # define parameters
-parameters = {'rho': 30, 'beta': 8/3, 'sigma': 10}
+# parameters = {'rho': 30, 'beta': 8/3, 'sigma': 10} # Davide values
+parameters = {'rho': 28, 'beta': 8/3, 'sigma': 10} # Dong (2018)
 
 def response(x, defaults = parameters):
     

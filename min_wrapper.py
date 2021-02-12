@@ -77,6 +77,6 @@ if __name__ == "__main__":
 
     print(sol.message)
     op_traj, op_freq = vec2traj(sol.x, 2)
-    op_traj.plot(gradient = 1/8, time_disc = 256)
+    op_traj.plot(gradient = 1/8, disc = 256, aspect = 1)
     plt.plot(traces['gr'])
     plt.show()

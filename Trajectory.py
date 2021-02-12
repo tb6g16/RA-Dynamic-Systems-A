@@ -6,6 +6,7 @@ import scipy.integrate as integ
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from System import System
+from my_fft import my_fft, my_ifft
 
 class Trajectory:
     """
@@ -80,7 +81,7 @@ class Trajectory:
         t = np.linspace(0, 2*np.pi*(1 - 1/disc), disc)
         for i in range(disc):
             curve_array[:, i] = curve_func(t[i])
-        return np.fft.rfft(curve_array, axis = 1)
+        return my_fft(curve_array)
 
     def __add__(self, other_traj):
         if not isinstance(other_traj, Trajectory):
@@ -107,10 +108,10 @@ class Trajectory:
         if type(factor) == np.ndarray:
             return Trajectory(np.matmul(factor, self.modes))
         elif hasattr(factor, '__call__'):
-            curve = np.fft.irfft(self.modes, axis = 1)
+            curve = my_ifft(self.modes)
             for i in range(np.shape(curve)[1]):
                 curve[:, i] = np.matmul(factor(i), curve[:, i])
-            return Trajectory(np.fft.rfft(curve, axis = 1))
+            return Trajectory(my_fft(curve))
         else:
             raise TypeError("Inputs are not of the correct type!")
 
@@ -119,8 +120,8 @@ class Trajectory:
 
     def __pow__(self, exponent):
         # perform element-by-element exponentiation
-        curve = np.fft.irfft(self.modes, axis = 1)
-        return Trajectory(np.fft.rfft(curve**exponent, axis = 1))
+        curve = my_ifft(self.modes)
+        return Trajectory(my_fft(curve**exponent))
 
     def __eq__(self, other_traj, rtol = 1e-6, atol = 1e-6):
         if not isinstance(other_traj, Trajectory):
@@ -170,11 +171,11 @@ class Trajectory:
 
         # adding in mean
         if type(mean) == np.ndarray:
-            modes_padded[:, 0] = mean*(2*(np.shape(modes_padded)[1] - 1))
+            modes_padded[:, 0] = mean
 
         # convert to time domain
-        curve = np.fft.irfft(modes_padded, axis = 1)
-        grad = np.fft.irfft(grad_padded, axis = 1)
+        curve = my_ifft(modes_padded)
+        grad = my_ifft(grad_padded)
 
         if self.shape[0] == 2:
             # plotting trajectory
@@ -188,7 +189,7 @@ class Trajectory:
             if gradient != None:
                 for i in range(0, curve.shape[1], int(1/gradient)):
                     ax.quiver(curve[0, i], curve[1, i], grad[0, i], grad[1, i])
-            
+
             # plt.xlabel("$x$")
             # plt.ylabel("$\dot{x}$")
             # plt.xlim([-2.2, 2.2])
@@ -236,8 +237,8 @@ if __name__ == '__main__':
 
     unit_circle3 = np.pi*unit_circle1 + unit_circle2
 
-    unit_circle1.plot(gradient = 1/4)
-    unit_circle3.plot(gradient = 1, time_disc = 16)
+    unit_circle1.plot(gradient = 1/4, aspect = 1)
+    unit_circle3.plot(gradient = 1, time_disc = 16, aspect = 1)
     
     ellipse = Trajectory(elps.x)
-    ellipse.plot(gradient = 1/4, mean = np.ones(2))
+    ellipse.plot(gradient = 1/4, mean = np.ones(2), aspect = 1)
