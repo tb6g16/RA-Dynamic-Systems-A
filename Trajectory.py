@@ -135,7 +135,6 @@ class Trajectory:
         i, j = key
         self.modes[i, j] = value
 
-    # ADD PROJECTION OF 3D TRAJECTORIES INTO 2D PLANE
     def plot(self, **kwargs):
         """
             This function is a placeholder and will be used for plotting
@@ -149,6 +148,8 @@ class Trajectory:
         time_disc = kwargs.get('disc', None)
         mean = kwargs.get('mean', None)
         show = kwargs.get('show', True)
+        proj = kwargs.get('proj', None)
+        aspect = kwargs.get('aspect', None)
 
         # calcualte gradient
         grad = traj_funcs.traj_grad(self)
@@ -180,7 +181,8 @@ class Trajectory:
             fig = plt.figure()
             ax = fig.gca()
             ax.plot(np.append(curve[0], curve[0, 0]), np.append(curve[1], curve[1, 0]))
-            ax.set_aspect('equal')
+            if aspect != None:
+                ax.set_aspect(aspect)
 
             # add gradient
             if gradient != None:
@@ -195,12 +197,30 @@ class Trajectory:
 
         elif self.shape[0] == 3:
             # plotting trajectory
-            fig = plt.figure()
-            ax = fig.gca(projection = "3d")
-            ax.plot(np.append(curve[0], curve[0, 0]), np.append(curve[1], curve[1, 0]), np.append(curve[2], curve[2, 0]))
-            # ax.set_aspect('equal')
-            ax.set_xlabel('x'), ax.set_ylabel('y'), ax.set_zlabel('z')
-            fig.suptitle(title)
+            if proj == None:
+                fig = plt.figure()
+                ax = fig.gca(projection = "3d")
+                ax.plot(np.append(curve[0], curve[0, 0]), np.append(curve[1], curve[1, 0]), np.append(curve[2], curve[2, 0]))
+                ax.set_xlabel('x'), ax.set_ylabel('y'), ax.set_zlabel('z')
+                fig.suptitle(title)
+            elif proj == 'xy' or proj == 'yx':
+                fig = plt.figure()
+                ax = fig.gca()
+                ax.plot(np.append(curve[0], curve[0, 0]), np.append(curve[1], curve[1, 0]))
+                if aspect != None:
+                    ax.set_aspect(aspect)
+            elif proj == 'xz' or proj == 'zx':
+                fig = plt.figure()
+                ax = fig.gca()
+                ax.plot(np.append(curve[0], curve[0, 0]), np.append(curve[2], curve[2, 0]))
+                if aspect != None:
+                    ax.set_aspect(aspect)
+            elif proj == 'yz' or proj == 'zy':
+                fig = plt.figure()
+                ax = fig.gca()
+                ax.plot(np.append(curve[1], curve[1, 0]), np.append(curve[2], curve[2, 0]))
+                if aspect != None:
+                    ax.set_aspect(aspect)
         else:
             raise ValueError("Can't plot!")
 
